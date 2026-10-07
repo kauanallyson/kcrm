@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.config;
 
+import br.com.kauanallyson.kcrm.auth.AuthenticatedUserService;
 import br.com.kauanallyson.kcrm.auth.JwtAuthenticationFilter;
 import br.com.kauanallyson.kcrm.auth.JwtService;
 import br.com.kauanallyson.kcrm.auth.SecurityProblemHandler;
@@ -20,6 +21,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService,
+                                                   AuthenticatedUserService userService,
                                                    SecurityProblemHandler problemHandler) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -33,7 +35,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(problemHandler)
                         .accessDeniedHandler(problemHandler))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService, userService),
                         UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

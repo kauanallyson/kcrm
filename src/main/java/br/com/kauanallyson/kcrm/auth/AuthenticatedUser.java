@@ -12,7 +12,7 @@ import java.util.UUID;
 public record AuthenticatedUser(UUID id, String email, String passwordHash) implements UserDetails {
 
     public static AuthenticatedUser from(User user) {
-        return new AuthenticatedUser(user.getId(), user.getEmail(), user.getPassword());
+        return new AuthenticatedUser(user.getId(), user.getEmail().value(), user.getPasswordHash().value());
     }
 
     public UUID getId() {

@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,7 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
 
     @ExceptionHandler(DomainException.class)
     public ProblemDetail handleDomain(DomainException ex) {
-        return Problems.of(ex.getStatus(), ex.getCode(), ex.getMessage());
+        return Problems.of(ex.getCode(), ex.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -37,19 +36,19 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        return Problems.of(HttpStatus.BAD_REQUEST, "INVALID_PARAMETER",
+        return Problems.of(ErrorCode.INVALID_PARAMETER,
                 "Invalid value for '" + ex.getName() + "': " + ex.getValue());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrity(DataIntegrityViolationException ex) {
-        return Problems.of(HttpStatus.CONFLICT, "DATA_CONFLICT", "Data conflicts with an existing record");
+        return Problems.of(ErrorCode.DATA_CONFLICT, "Data conflicts with an existing record");
     }
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception ex) {
         log.error("Unexpected error", ex);
-        return Problems.of(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error");
+        return Problems.of(ErrorCode.INTERNAL_ERROR, "Unexpected error");
     }
 
     @Override
@@ -64,7 +63,7 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
                         e -> String.valueOf(e.getDefaultMessage()),
                         (first, second) -> first));
 
-        ProblemDetail problem = Problems.of(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Validation failed");
+        ProblemDetail problem = Problems.of(ErrorCode.VALIDATION_FAILED, "Validation failed");
         problem.setProperty("errors", errors);
         return ResponseEntity.badRequest().headers(headers).body(problem);
     }

@@ -13,39 +13,48 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtService jwtService;
+    private final AuthenticatedUserService userService;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(JwtService jwtService, AuthenticatedUserService userService) {
         this.jwtService = jwtService;
+        this.userService = userService;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header == null || !header.startsWith(BEARER_PREFIX)
-                || SecurityContextHolder.getContext().getAuthentication() != null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = header.substring(BEARER_PREFIX.length());
         // Unresolvable token: continue unauthenticated, the entry point answers 401
-        jwtService.resolve(token).ifPresent(user -> {
-            UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
-                    .authenticated(user, null, user.getAuthorities());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            context.setAuthentication(authentication);
-            SecurityContextHolder.setContext(context);
-        });
+        bearerToken(request)
+                .flatMap(jwtService::parseSubject)
+                .flatMap(userService::loadById)
+                .ifPresent(user -> authenticate(user, request));
 
         filterChain.doFilter(request, response);
+    }
+
+    private static Optional<String> bearerToken(HttpServletRequest request) {
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
+                .filter(header -> header.startsWith(BEARER_PREFIX))
+                .map(header -> header.substring(BEARER_PREFIX.length()));
+    }
+
+    private static void authenticate(AuthenticatedUser user, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
+                .authenticated(user, null, user.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
     }
 }

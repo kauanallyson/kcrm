@@ -13,7 +13,7 @@ public record UserResponse(
         String address
 ) {
     public static UserResponse from(User user) {
-        return new UserResponse(user.getId(), user.getName(), user.getCpf(),
-                user.getEmail(), user.getPhone(), user.getAddress());
+        return new UserResponse(user.getId(), user.getName(), user.getCpf().value(),
+                user.getEmail().value(), user.getPhone(), user.getAddress());
     }
 }

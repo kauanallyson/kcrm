@@ -1,7 +1,6 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.dto.TokenResponse;
-import br.com.kauanallyson.kcrm.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
@@ -25,14 +24,11 @@ public class JwtService {
 
     private final SecretKey key;
     private final Duration expiration;
-    private final UserRepository userRepository;
 
     public JwtService(@Value("${jwt.secret}") String secret,
-                      @Value("${jwt.expiration}") Duration expiration,
-                      UserRepository userRepository) {
+                      @Value("${jwt.expiration}") Duration expiration) {
         this.key = toKey(secret);
         this.expiration = expiration;
-        this.userRepository = userRepository;
     }
 
     // Fail at startup with a clear message instead of on the first login
@@ -58,17 +54,19 @@ public class JwtService {
         return new TokenResponse(token, TOKEN_TYPE, expiration.toSeconds());
     }
 
-    public Optional<AuthenticatedUser> resolve(String token) {
-        UUID userId;
+    public Optional<UUID> parseSubject(String token) {
         try {
             Jws<Claims> jws = Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
-            if (!ALGORITHM.getId().equals(jws.getHeader().getAlgorithm())) {
-                return Optional.empty();
-            }
-            userId = UUID.fromString(jws.getPayload().getSubject());
+            return subjectOf(jws);
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
-        return userRepository.findById(userId).map(AuthenticatedUser::from);
+    }
+
+    private static Optional<UUID> subjectOf(Jws<Claims> jws) {
+        if (!ALGORITHM.getId().equals(jws.getHeader().getAlgorithm())) {
+            return Optional.empty();
+        }
+        return Optional.of(UUID.fromString(jws.getPayload().getSubject()));
     }
 }

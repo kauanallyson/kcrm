@@ -28,18 +28,21 @@ public class AuthService {
     }
 
     public TokenResponse login(LoginRequest request) {
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(
-                    UsernamePasswordAuthenticationToken.unauthenticated(request.email(), request.password()));
-        } catch (AuthenticationException e) {
-            throw new InvalidCredentialsException();
-        }
-        return jwtService.issue(((AuthenticatedUser) authentication.getPrincipal()).id());
+        return jwtService.issue(authenticate(request).id());
     }
 
     public TokenResponse register(UserRequest request) {
         User user = userService.create(request);
         return jwtService.issue(user.getId());
+    }
+
+    private AuthenticatedUser authenticate(LoginRequest request) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    UsernamePasswordAuthenticationToken.unauthenticated(request.email(), request.password()));
+            return (AuthenticatedUser) authentication.getPrincipal();
+        } catch (AuthenticationException e) {
+            throw new InvalidCredentialsException();
+        }
     }
 }

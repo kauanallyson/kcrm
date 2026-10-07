@@ -2,8 +2,6 @@ package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.TestJwt;
 import br.com.kauanallyson.kcrm.dto.TokenResponse;
-import br.com.kauanallyson.kcrm.model.User;
-import br.com.kauanallyson.kcrm.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -13,49 +11,29 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class JwtServiceTest {
     private static final String SECRET = TestJwt.randomSecret();
     private static final String OTHER_SECRET = TestJwt.randomSecret();
     private static final UUID ALICE_ID = UUID.randomUUID();
 
-    private final UserRepository userRepository = mock(UserRepository.class);
-    private final JwtService jwtService = new JwtService(SECRET, Duration.ofMinutes(1), userRepository);
+    private final JwtService jwtService = new JwtService(SECRET, Duration.ofMinutes(1));
 
     @Test
-    void issuedTokenResolvesToItsUser() {
-        User alice = mock(User.class);
-        when(alice.getId()).thenReturn(ALICE_ID);
-        when(alice.getEmail()).thenReturn("alice@test.com");
-        when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
-
+    void issuedTokenParsesToItsSubject() {
         TokenResponse response = jwtService.issue(ALICE_ID);
 
         assertThat(response.type()).isEqualTo("Bearer");
         assertThat(response.expiresIn()).isEqualTo(60);
-        assertThat(jwtService.resolve(response.token()))
-                .hasValueSatisfying(user -> {
-                    assertThat(user.id()).isEqualTo(ALICE_ID);
-                    assertThat(user.email()).isEqualTo("alice@test.com");
-                });
-    }
-
-    @Test
-    void tokenOfDeletedUserResolvesToNothing() {
-        when(userRepository.findById(ALICE_ID)).thenReturn(Optional.empty());
-
-        assertUnresolved(jwtService.issue(ALICE_ID).token());
+        assertThat(jwtService.parseSubject(response.token())).contains(ALICE_ID);
     }
 
     @Test
     void tokenSignedWithAnotherKeyIsRejected() {
-        String forged = new JwtService(OTHER_SECRET, Duration.ofMinutes(1), userRepository)
+        String forged = new JwtService(OTHER_SECRET, Duration.ofMinutes(1))
                 .issue(ALICE_ID).token();
 
         assertUnresolved(forged);
@@ -97,14 +75,13 @@ class JwtServiceTest {
         byte[] keyBytes = new byte[64];
         new SecureRandom().nextBytes(keyBytes);
         JwtService service = new JwtService(Base64.getEncoder().encodeToString(keyBytes),
-                Duration.ofMinutes(1), userRepository);
-        when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(mock(User.class)));
+                Duration.ofMinutes(1));
         String hs512 = Jwts.builder()
                 .subject(ALICE_ID.toString())
                 .signWith(Keys.hmacShaKeyFor(keyBytes), Jwts.SIG.HS512)
                 .compact();
 
-        assertThat(service.resolve(hs512)).isEmpty();
+        assertThat(service.parseSubject(hs512)).isEmpty();
     }
 
     @Test
@@ -113,6 +90,6 @@ class JwtServiceTest {
     }
 
     private void assertUnresolved(String token) {
-        assertThat(jwtService.resolve(token)).isEmpty();
+        assertThat(jwtService.parseSubject(token)).isEmpty();
     }
 }

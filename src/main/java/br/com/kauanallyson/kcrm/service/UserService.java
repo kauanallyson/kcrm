@@ -23,12 +23,11 @@ public class UserService {
 
     @Transactional
     public User create(UserRequest request) {
-        if (userRepository.existsByEmailOrCpf(request.email(), request.cpf())) {
+        User.Profile profile = request.toProfile();
+        if (userRepository.existsByEmailOrCpf(profile.email(), profile.cpf())) {
             throw new UserAlreadyExistsException();
         }
-        User user = new User(request.name(), request.cpf(), request.email(),
-                passwordEncoder.encode(request.password()), request.phone(), request.address());
-        return userRepository.save(user);
+        return userRepository.save(User.register(profile, request.password(), passwordEncoder));
     }
 
     @Transactional(readOnly = true)
@@ -39,14 +38,12 @@ public class UserService {
     @Transactional
     public User update(UUID id, UserRequest request) {
         User user = findById(id);
-        if (userRepository.existsByEmailOrCpfAndIdNot(request.email(), request.cpf(), id)) {
+        User.Profile profile = request.toProfile();
+        if (userRepository.existsByEmailOrCpfAndIdNot(profile.email(), profile.cpf(), id)) {
             throw new UserAlreadyExistsException();
         }
-        // Keep the stored hash when the password didn't change, so a profile edit isn't a password change
-        String password = passwordEncoder.matches(request.password(), user.getPassword())
-                ? user.getPassword()
-                : passwordEncoder.encode(request.password());
-        user.update(request.name(), request.cpf(), request.email(), password, request.phone(), request.address());
+        user.updateProfile(profile);
+        user.changePassword(request.password(), passwordEncoder);
         return user;
     }
 

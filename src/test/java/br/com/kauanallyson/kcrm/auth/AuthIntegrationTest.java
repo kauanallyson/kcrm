@@ -1,6 +1,7 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.TestcontainersConfig;
+import br.com.kauanallyson.kcrm.model.Email;
 import br.com.kauanallyson.kcrm.repository.UserRepository;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ class AuthIntegrationTest {
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andExpect(jsonPath("$.type").value("Bearer"));
 
-        String stored = userRepository.findByEmail(email).orElseThrow().getPassword();
+        String stored = userRepository.findByEmail(new Email(email)).orElseThrow().getPasswordHash().value();
         assertThat(stored).startsWith("{bcrypt}").doesNotContain(PASSWORD);
     }
 
@@ -215,7 +216,7 @@ class AuthIntegrationTest {
     }
 
     private UUID idOf(String email) {
-        return userRepository.findByEmail(email).orElseThrow().getId();
+        return userRepository.findByEmail(new Email(email)).orElseThrow().getId();
     }
 
     private static String bearer(String token) {
