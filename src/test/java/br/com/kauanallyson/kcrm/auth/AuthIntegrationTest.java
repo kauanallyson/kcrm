@@ -1,28 +1,23 @@
 package br.com.kauanallyson.kcrm.auth;
 
+import br.com.kauanallyson.kcrm.TestApi;
 import br.com.kauanallyson.kcrm.TestcontainersConfig;
 import br.com.kauanallyson.kcrm.model.Email;
-import br.com.kauanallyson.kcrm.model.Perfil;
 import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
-import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
+import static br.com.kauanallyson.kcrm.TestApi.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,77 +25,53 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(TestcontainersConfig.class)
 class AuthIntegrationTest {
-    private static final String SENHA = "senha12345";
-
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Test
-    void cadastroRetornaTokenEGuardaHashDaSenha() throws Exception {
-        String email = randomEmail();
+    private TestApi api;
 
-        postJson("/api/auth/register", usuarioJson(email, randomCpf()))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.type").value("Bearer"));
-
-        String stored = usuarioRepository.findByEmail(new Email(email)).orElseThrow().getSenhaHash().value();
-        assertThat(stored).startsWith("{bcrypt}").doesNotContain(SENHA);
+    @BeforeEach
+    void setUp() {
+        api = new TestApi(mockMvc);
     }
 
     @Test
-    void cadastroEhCorretorMesmoPedindoAdmin() throws Exception {
-        String email = randomEmail();
-        String body = usuarioJson(email, randomCpf()).replace("}", ",\"perfil\":\"ADMIN\"}");
+    void adminInicialEhCriadoNaSubidaComSenhaEmHash() {
+        var admin = usuarioRepository.findByEmail(new Email(ADMIN_EMAIL)).orElseThrow();
 
-        postJson("/api/auth/register", body).andExpect(status().isCreated());
-
-        assertThat(usuarioRepository.findByEmail(new Email(email)).orElseThrow().getPerfil())
-                .isEqualTo(Perfil.CORRETOR);
+        assertThat(admin.getPerfil().name()).isEqualTo("ADMIN");
+        assertThat(admin.getSenhaHash().value()).startsWith("{bcrypt}").doesNotContain(ADMIN_SENHA);
     }
 
     @Test
-    void cadastroComEmailDuplicadoEhConflito() throws Exception {
-        String email = randomEmail();
-        cadastrar(email);
-
-        postJson("/api/auth/register", usuarioJson(email, randomCpf()))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("USUARIO_JA_EXISTE"));
-    }
-
-    @Test
-    void cadastroComCpfDuplicadoEhConflito() throws Exception {
-        String cpf = randomCpf();
-        cadastrar(randomEmail(), cpf);
-
-        postJson("/api/auth/register", usuarioJson(randomEmail(), cpf))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("USUARIO_JA_EXISTE"));
+    void cadastroPublicoNaoExisteMais() throws Exception {
+        mockMvc.perform(json(post("/api/auth/register"), usuarioJson(randomEmail(), randomCpf())))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void loginComCredenciaisValidasRetornaToken() throws Exception {
         String email = randomEmail();
-        cadastrar(email);
+        api.cadastrar(email, "CORRETOR");
 
-        postJson("/api/auth/login", loginJson(email, SENHA))
+        mockMvc.perform(json(post("/api/auth/login"), loginJson(email, SENHA)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty());
+                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.type").value("Bearer"));
     }
 
     @Test
     void loginComSenhaErradaOuEmailDesconhecidoEhNaoAutorizadoComMesmaMensagem() throws Exception {
         String email = randomEmail();
-        cadastrar(email);
+        api.cadastrar(email, "CORRETOR");
 
-        postJson("/api/auth/login", loginJson(email, "senhaerrada123"))
+        mockMvc.perform(json(post("/api/auth/login"), loginJson(email, "senhaerrada123")))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("CREDENCIAIS_INVALIDAS"));
-        postJson("/api/auth/login", loginJson(randomEmail(), SENHA))
+        mockMvc.perform(json(post("/api/auth/login"), loginJson(randomEmail(), SENHA)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("CREDENCIAIS_INVALIDAS"));
     }
@@ -108,13 +79,15 @@ class AuthIntegrationTest {
     @Test
     void meRetornaOUsuarioLogado() throws Exception {
         String email = randomEmail();
-        String token = cadastrar(email);
+        UUID id = api.cadastrar(email, "CORRETOR");
+        String token = api.login(email, SENHA);
 
-        mockMvc.perform(get("/api/auth/me").header("Authorization", bearer(token)))
+        mockMvc.perform(comToken(get("/api/auth/me"), token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(idOf(email).toString()))
+                .andExpect(jsonPath("$.id").value(id.toString()))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.perfil").value("CORRETOR"))
+                .andExpect(jsonPath("$.ativo").value(true))
                 .andExpect(jsonPath("$.senha").doesNotExist());
     }
 
@@ -139,137 +112,15 @@ class AuthIntegrationTest {
     }
 
     @Test
-    void usuarioSoAcessaASiMesmo() throws Exception {
-        String emailA = randomEmail();
-        String cpfA = randomCpf();
-        String tokenA = cadastrar(emailA, cpfA);
-        String emailB = randomEmail();
-        cadastrar(emailB);
-        UUID idA = idOf(emailA);
-        UUID idB = idOf(emailB);
-
-        mockMvc.perform(get("/api/usuarios/" + idA).header("Authorization", bearer(tokenA)))
-                .andExpect(status().isOk());
-        mockMvc.perform(json(put("/api/usuarios/" + idA), usuarioJson(emailA, cpfA)).header("Authorization", bearer(tokenA)))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/api/usuarios/" + idB).header("Authorization", bearer(tokenA)))
-                .andExpect(status().isForbidden());
-        mockMvc.perform(json(put("/api/usuarios/" + idB), usuarioJson(emailB, randomCpf())).header("Authorization", bearer(tokenA)))
-                .andExpect(status().isForbidden());
-        mockMvc.perform(delete("/api/usuarios/" + idB).header("Authorization", bearer(tokenA)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("ACESSO_NEGADO"));
-    }
-
-    @Test
-    void usuarioPodeSeExcluirESeuTokenDeixaDeFuncionar() throws Exception {
-        String email = randomEmail();
-        String token = cadastrar(email);
-        UUID id = idOf(email);
-
-        mockMvc.perform(delete("/api/usuarios/" + id).header("Authorization", bearer(token)))
-                .andExpect(status().isNoContent());
-
-        mockMvc.perform(get("/api/usuarios/" + id).header("Authorization", bearer(token)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void rotasDeListarECriarUsuarioNaoExistem() throws Exception {
-        String token = cadastrar(randomEmail());
-
-        mockMvc.perform(get("/api/usuarios").header("Authorization", bearer(token)))
-                .andExpect(status().isNotFound());
-        mockMvc.perform(json(post("/api/usuarios"), usuarioJson(randomEmail(), randomCpf())).header("Authorization", bearer(token)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     void jsonMalformadoEhRequisicaoInvalida() throws Exception {
-        postJson("/api/auth/login", "{not json")
+        mockMvc.perform(json(post("/api/auth/login"), "{not json"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
-    void camposInvalidosRetornamErrosDeValidacao() throws Exception {
-        postJson("/api/auth/register", usuarioJson("not-an-email", "123"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("VALIDACAO_FALHOU"))
-                .andExpect(jsonPath("$.errors.email").exists())
-                .andExpect(jsonPath("$.errors.cpf").exists());
-    }
-
-    @Test
     void idInvalidoEhRequisicaoInvalida() throws Exception {
-        String token = cadastrar(randomEmail());
-
-        mockMvc.perform(get("/api/usuarios/not-a-uuid").header("Authorization", bearer(token)))
+        mockMvc.perform(comToken(get("/api/usuarios/not-a-uuid"), api.loginAdminInicial()))
                 .andExpect(status().isBadRequest());
-    }
-
-    private String cadastrar(String email) throws Exception {
-        return cadastrar(email, randomCpf());
-    }
-
-    private String cadastrar(String email, String cpf) throws Exception {
-        String body = postJson("/api/auth/register", usuarioJson(email, cpf))
-                .andExpect(status().isCreated())
-                .andReturn().getResponse().getContentAsString();
-        return JsonPath.read(body, "$.token");
-    }
-
-    private ResultActions postJson(String url, String body) throws Exception {
-        return mockMvc.perform(json(post(url), body));
-    }
-
-    private static MockHttpServletRequestBuilder json(MockHttpServletRequestBuilder request, String body) {
-        return request.contentType(MediaType.APPLICATION_JSON).content(body);
-    }
-
-    private UUID idOf(String email) {
-        return usuarioRepository.findByEmail(new Email(email)).orElseThrow().getId();
-    }
-
-    private static String bearer(String token) {
-        return "Bearer " + token;
-    }
-
-    private static String randomEmail() {
-        return "usuario-" + UUID.randomUUID() + "@test.com";
-    }
-
-    // Gera um CPF com dígitos verificadores válidos para passar na validação @CPF
-    private static String randomCpf() {
-        int[] d = new int[11];
-        for (int i = 0; i < 9; i++) {
-            d[i] = ThreadLocalRandom.current().nextInt(10);
-        }
-        for (int pos = 9; pos < 11; pos++) {
-            int sum = 0;
-            for (int i = 0; i < pos; i++) {
-                sum += d[i] * (pos + 1 - i);
-            }
-            int check = 11 - sum % 11;
-            d[pos] = check >= 10 ? 0 : check;
-        }
-        StringBuilder cpf = new StringBuilder();
-        for (int digit : d) {
-            cpf.append(digit);
-        }
-        return cpf.toString();
-    }
-
-    private static String usuarioJson(String email, String cpf) {
-        return """
-                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"1","endereco":"a"}
-                """.formatted(cpf, email, SENHA);
-    }
-
-    private static String loginJson(String email, String senha) {
-        return """
-                {"email":"%s","senha":"%s"}
-                """.formatted(email, senha);
     }
 }

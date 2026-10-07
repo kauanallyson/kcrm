@@ -11,11 +11,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public record AuthenticatedUser(UUID id, String email, String senhaHash, Perfil perfil) implements UserDetails {
+public record AuthenticatedUser(UUID id, String email, String senhaHash, Perfil perfil, boolean ativo) implements UserDetails {
 
     public static AuthenticatedUser from(Usuario usuario) {
         return new AuthenticatedUser(usuario.getId(), usuario.getEmail().value(), usuario.getSenhaHash().value(),
-                usuario.getPerfil());
+                usuario.getPerfil(), usuario.isAtivo());
     }
 
     public UUID getId() {
@@ -26,6 +26,12 @@ public record AuthenticatedUser(UUID id, String email, String senhaHash, Perfil 
     @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + perfil.name()));
+    }
+
+    // Um Usuário desativado não passa no login (DaoAuthenticationProvider checa isEnabled)
+    @Override
+    public boolean isEnabled() {
+        return ativo;
     }
 
     @Override

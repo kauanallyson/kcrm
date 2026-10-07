@@ -12,10 +12,12 @@ public record UsuarioResponse(
         String email,
         String telefone,
         String endereco,
-        Perfil perfil
+        Perfil perfil,
+        boolean ativo
 ) {
     public static UsuarioResponse from(Usuario usuario) {
         return new UsuarioResponse(usuario.getId(), usuario.getNome(), usuario.getCpf().value(),
-                usuario.getEmail().value(), usuario.getTelefone(), usuario.getEndereco(), usuario.getPerfil());
+                usuario.getEmail().value(), usuario.getTelefone(), usuario.getEndereco(), usuario.getPerfil(),
+                usuario.isAtivo());
     }
 }

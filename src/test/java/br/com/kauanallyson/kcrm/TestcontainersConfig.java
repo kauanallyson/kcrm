@@ -19,4 +19,17 @@ public class TestcontainersConfig {
         String secret = TestJwt.randomSecret();
         return registry -> registry.add("jwt.secret", () -> secret);
     }
+
+    // Admin inicial criado na subida, para os testes de integração logarem como Admin
+    @Bean
+    DynamicPropertyRegistrar adminInicialProperties() {
+        return registry -> {
+            registry.add("admin.nome", () -> "Admin Inicial");
+            registry.add("admin.email", () -> TestApi.ADMIN_EMAIL);
+            registry.add("admin.senha", () -> TestApi.ADMIN_SENHA);
+            registry.add("admin.cpf", () -> "52998224725");
+            registry.add("admin.telefone", () -> "88999990000");
+            registry.add("admin.endereco", () -> "Rua A, 1");
+        };
+    }
 }

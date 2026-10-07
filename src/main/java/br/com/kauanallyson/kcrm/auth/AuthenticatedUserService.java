@@ -1,6 +1,7 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.model.Email;
+import br.com.kauanallyson.kcrm.model.Usuario;
 import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
 import lombok.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,6 +30,9 @@ public class AuthenticatedUserService implements UserDetailsService {
     }
 
     public Optional<AuthenticatedUser> loadById(UUID id) {
-        return usuarioRepository.findById(id).map(AuthenticatedUser::from);
+        // Recarregado a cada requisição: um token de Usuário desativado deixa de valer na hora
+        return usuarioRepository.findById(id)
+                .filter(Usuario::isAtivo)
+                .map(AuthenticatedUser::from);
     }
 }

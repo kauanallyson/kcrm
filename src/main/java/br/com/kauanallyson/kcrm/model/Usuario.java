@@ -6,7 +6,13 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import br.com.kauanallyson.kcrm.exception.MotivoObrigatorioException;
+import br.com.kauanallyson.kcrm.exception.UltimoAdminException;
+import br.com.kauanallyson.kcrm.exception.UsuarioJaAtivoException;
+import br.com.kauanallyson.kcrm.exception.UsuarioJaDesativadoException;
+
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -38,10 +44,12 @@ public class Usuario {
     @Column(nullable = false)
     private String endereco;
 
-    // O default preenche as linhas já existentes quando o ddl-auto=update adiciona a coluna
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "varchar(20) default 'CORRETOR'")
+    @Column(nullable = false, length = 20)
     private Perfil perfil;
+
+    @Column(nullable = false)
+    private boolean ativo;
 
     @CreationTimestamp
     private OffsetDateTime criadoEm;
@@ -49,10 +57,11 @@ public class Usuario {
     @UpdateTimestamp
     private OffsetDateTime atualizadoEm;
 
-    public static Usuario cadastrar(Dados dados, String senha, PasswordEncoder encoder) {
+    public static Usuario cadastrar(Dados dados, Perfil perfil, String senha, PasswordEncoder encoder) {
         Usuario usuario = new Usuario();
         usuario.atualizarDados(dados);
-        usuario.perfil = Perfil.CORRETOR;
+        usuario.perfil = Objects.requireNonNull(perfil, "perfil");
+        usuario.ativo = true;
         usuario.senhaHash = SenhaHash.encode(senha, encoder);
         return usuario;
     }
@@ -75,6 +84,50 @@ public class Usuario {
 
     public boolean senhaConfere(String senha, PasswordEncoder encoder) {
         return senhaHash.matches(senha, encoder);
+    }
+
+    public boolean isAdminAtivo() {
+        return ativo && perfil == Perfil.ADMIN;
+    }
+
+    // adminsAtivos é a contagem atual de Admins ativos, incluindo este Usuário se ele for um
+    public void mudarPerfil(Perfil novo, long adminsAtivos) {
+        Objects.requireNonNull(novo, "perfil");
+        if (novo != Perfil.ADMIN) {
+            exigirQueNaoSejaOUltimoAdmin(adminsAtivos);
+        }
+        this.perfil = novo;
+    }
+
+    public HistoricoAcesso desativar(String motivo, Usuario admin, long adminsAtivos) {
+        exigirMotivo(motivo);
+        if (!ativo) {
+            throw new UsuarioJaDesativadoException(id);
+        }
+        exigirQueNaoSejaOUltimoAdmin(adminsAtivos);
+        this.ativo = false;
+        return HistoricoAcesso.registrar(this, TipoMovimentacao.DESATIVACAO, motivo.strip(), admin);
+    }
+
+    public HistoricoAcesso reativar(String motivo, Usuario admin) {
+        if (ativo) {
+            throw new UsuarioJaAtivoException(id);
+        }
+        this.ativo = true;
+        String motivoLimpo = motivo == null || motivo.isBlank() ? null : motivo.strip();
+        return HistoricoAcesso.registrar(this, TipoMovimentacao.REATIVACAO, motivoLimpo, admin);
+    }
+
+    private void exigirQueNaoSejaOUltimoAdmin(long adminsAtivos) {
+        if (isAdminAtivo() && adminsAtivos <= 1) {
+            throw new UltimoAdminException();
+        }
+    }
+
+    private static void exigirMotivo(String motivo) {
+        if (motivo == null || motivo.isBlank()) {
+            throw new MotivoObrigatorioException();
+        }
     }
 
     public record Dados(String nome, Cpf cpf, Email email, String telefone, String endereco) {
