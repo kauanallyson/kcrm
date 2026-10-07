@@ -7,7 +7,7 @@ CRM de uma imobiliária: a equipe usa para atender pessoas interessadas em compr
 ### Equipe
 
 **Usuário**:
-Membro da equipe da imobiliária que acessa o CRM. Todo Usuário tem exatamente um Perfil.
+Membro da equipe da imobiliária que acessa o CRM. Todo Usuário tem exatamente um Perfil e está ativo ou desativado; nunca é apagado.
 _Evitar_: Conta, membro, funcionário, user
 
 **Perfil**:
@@ -15,12 +15,20 @@ O tipo de acesso de um Usuário: Admin ou Corretor.
 _Evitar_: Papel, permissão, role
 
 **Admin**:
-Usuário que administra o CRM e os demais Usuários.
+Usuário que administra o CRM: é o único que cadastra Corretores, muda Perfis e desativa Usuários. Sempre existe pelo menos um Admin.
 _Evitar_: Gerente, superusuário
 
 **Corretor**:
 Usuário que é corretor de imóveis e atende Clientes.
 _Evitar_: Agente, vendedor, broker, realtor
+
+**Desativação**:
+Ato de um Admin que impede um Usuário de acessar o CRM, sem apagá-lo, registrando quando ocorreu e o motivo. O último Admin ativo não pode ser desativado. Os Clientes de um Corretor desativado são transferidos pelo Admin para outro Corretor.
+_Evitar_: Exclusão, remoção, bloqueio, banimento
+
+**Reativação**:
+Ato de um Admin que devolve o acesso a um Usuário desativado. Desativações e Reativações ficam todas no histórico do Usuário.
+_Evitar_: Desbloqueio, restauração
 
 ### Atendimento
 
