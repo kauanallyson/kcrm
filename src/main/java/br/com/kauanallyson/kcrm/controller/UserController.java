@@ -1,19 +1,17 @@
 package br.com.kauanallyson.kcrm.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.kauanallyson.kcrm.dto.UserRequest;
 import br.com.kauanallyson.kcrm.dto.UserResponse;
-import br.com.kauanallyson.kcrm.model.User;
 import br.com.kauanallyson.kcrm.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
 
@@ -21,35 +19,22 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<UserResponse> create(@RequestBody @Valid UserRequest request) {
-        UserResponse response = toResponse(userService.create(request));
-        return ResponseEntity.created(URI.create("/users/" + response.id())).body(response);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<UserResponse>> findAll() {
-        return ResponseEntity.ok(userService.findAll().stream().map(this::toResponse).toList());
-    }
-
     @GetMapping("/{id}")
+    @PreAuthorize("#id == principal.id")
     public ResponseEntity<UserResponse> findById(@PathVariable UUID id) {
-        return ResponseEntity.ok(toResponse(userService.findById(id)));
+        return ResponseEntity.ok(UserResponse.from(userService.findById(id)));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("#id == principal.id")
     public ResponseEntity<UserResponse> update(@PathVariable UUID id, @RequestBody @Valid UserRequest request) {
-        return ResponseEntity.ok(toResponse(userService.update(id, request)));
+        return ResponseEntity.ok(UserResponse.from(userService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("#id == principal.id")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private UserResponse toResponse(User user) {
-        return new UserResponse(user.getId(), user.getName(), user.getCpf(),
-                user.getEmail(), user.getPhone(), user.getAddress());
     }
 }

@@ -1,5 +1,7 @@
 package br.com.kauanallyson.kcrm.dto;
 
+import br.com.kauanallyson.kcrm.model.User;
+
 import java.util.UUID;
 
 public record UserResponse(
@@ -10,4 +12,8 @@ public record UserResponse(
         String phone,
         String address
 ) {
+    public static UserResponse from(User user) {
+        return new UserResponse(user.getId(), user.getName(), user.getCpf(),
+                user.getEmail(), user.getPhone(), user.getAddress());
+    }
 }
