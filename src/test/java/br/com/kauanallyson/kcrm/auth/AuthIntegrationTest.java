@@ -2,6 +2,7 @@ package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.TestcontainersConfig;
 import br.com.kauanallyson.kcrm.model.Email;
+import br.com.kauanallyson.kcrm.model.Perfil;
 import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,17 @@ class AuthIntegrationTest {
 
         String stored = usuarioRepository.findByEmail(new Email(email)).orElseThrow().getSenhaHash().value();
         assertThat(stored).startsWith("{bcrypt}").doesNotContain(SENHA);
+    }
+
+    @Test
+    void cadastroEhCorretorMesmoPedindoAdmin() throws Exception {
+        String email = randomEmail();
+        String body = usuarioJson(email, randomCpf()).replace("}", ",\"perfil\":\"ADMIN\"}");
+
+        postJson("/api/auth/register", body).andExpect(status().isCreated());
+
+        assertThat(usuarioRepository.findByEmail(new Email(email)).orElseThrow().getPerfil())
+                .isEqualTo(Perfil.CORRETOR);
     }
 
     @Test
@@ -102,6 +114,7 @@ class AuthIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(idOf(email).toString()))
                 .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.perfil").value("CORRETOR"))
                 .andExpect(jsonPath("$.senha").doesNotExist());
     }
 

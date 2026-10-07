@@ -20,6 +20,13 @@ class UsuarioTest {
     }
 
     @Test
+    void usuarioCadastradoEhCorretor() {
+        Usuario usuario = Usuario.cadastrar(DADOS, "segredo123", ENCODER);
+
+        assertThat(usuario.getPerfil()).isEqualTo(Perfil.CORRETOR);
+    }
+
+    @Test
     void senhaInalteradaMantemOMesmoHash() {
         Usuario usuario = Usuario.cadastrar(DADOS, "segredo123", ENCODER);
         SenhaHash antes = usuario.getSenhaHash();

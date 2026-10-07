@@ -38,6 +38,11 @@ public class Usuario {
     @Column(nullable = false)
     private String endereco;
 
+    // O default preenche as linhas já existentes quando o ddl-auto=update adiciona a coluna
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(20) default 'CORRETOR'")
+    private Perfil perfil;
+
     @CreationTimestamp
     private OffsetDateTime criadoEm;
 
@@ -47,6 +52,7 @@ public class Usuario {
     public static Usuario cadastrar(Dados dados, String senha, PasswordEncoder encoder) {
         Usuario usuario = new Usuario();
         usuario.atualizarDados(dados);
+        usuario.perfil = Perfil.CORRETOR;
         usuario.senhaHash = SenhaHash.encode(senha, encoder);
         return usuario;
     }

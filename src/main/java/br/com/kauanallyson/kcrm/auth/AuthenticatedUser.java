@@ -1,18 +1,21 @@
 package br.com.kauanallyson.kcrm.auth;
 
+import br.com.kauanallyson.kcrm.model.Perfil;
 import br.com.kauanallyson.kcrm.model.Usuario;
 import lombok.NonNull;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public record AuthenticatedUser(UUID id, String email, String senhaHash) implements UserDetails {
+public record AuthenticatedUser(UUID id, String email, String senhaHash, Perfil perfil) implements UserDetails {
 
     public static AuthenticatedUser from(Usuario usuario) {
-        return new AuthenticatedUser(usuario.getId(), usuario.getEmail().value(), usuario.getSenhaHash().value());
+        return new AuthenticatedUser(usuario.getId(), usuario.getEmail().value(), usuario.getSenhaHash().value(),
+                usuario.getPerfil());
     }
 
     public UUID getId() {
@@ -22,7 +25,7 @@ public record AuthenticatedUser(UUID id, String email, String senhaHash) impleme
     @Override
     @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + perfil.name()));
     }
 
     @Override
