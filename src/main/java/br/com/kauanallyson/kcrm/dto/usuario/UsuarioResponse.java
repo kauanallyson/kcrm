@@ -1,7 +1,7 @@
-package br.com.kauanallyson.kcrm.dto;
+package br.com.kauanallyson.kcrm.dto.usuario;
 
-import br.com.kauanallyson.kcrm.model.Perfil;
-import br.com.kauanallyson.kcrm.model.Usuario;
+import br.com.kauanallyson.kcrm.model.usuario.Perfil;
+import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package br.com.kauanallyson.kcrm.model;
+package br.com.kauanallyson.kcrm.model.usuario;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,6 +7,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import br.com.kauanallyson.kcrm.exception.MotivoObrigatorioException;
+import br.com.kauanallyson.kcrm.model.common.Cpf;
+import br.com.kauanallyson.kcrm.model.common.Email;
 import br.com.kauanallyson.kcrm.exception.UltimoAdminException;
 import br.com.kauanallyson.kcrm.exception.UsuarioJaAtivoException;
 import br.com.kauanallyson.kcrm.exception.UsuarioJaDesativadoException;

@@ -1,6 +1,6 @@
 package br.com.kauanallyson.kcrm.auth;
 
-import br.com.kauanallyson.kcrm.dto.TokenResponse;
+import br.com.kauanallyson.kcrm.dto.auth.TokenResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;

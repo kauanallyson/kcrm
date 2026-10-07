@@ -1,9 +1,9 @@
 package br.com.kauanallyson.kcrm.repository;
 
-import br.com.kauanallyson.kcrm.model.Cpf;
-import br.com.kauanallyson.kcrm.model.Email;
-import br.com.kauanallyson.kcrm.model.Perfil;
-import br.com.kauanallyson.kcrm.model.Usuario;
+import br.com.kauanallyson.kcrm.model.common.Cpf;
+import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.usuario.Perfil;
+import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -27,7 +27,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
     // Trava as linhas dos Admins ativos para que duas operações simultâneas não removam o último Admin
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select u from Usuario u where u.perfil = br.com.kauanallyson.kcrm.model.Perfil.ADMIN and u.ativo = true")
+    @Query("select u from Usuario u where u.perfil = br.com.kauanallyson.kcrm.model.usuario.Perfil.ADMIN and u.ativo = true")
     List<Usuario> travarAdminsAtivos();
 
     List<Usuario> findAllByOrderByNomeAsc();

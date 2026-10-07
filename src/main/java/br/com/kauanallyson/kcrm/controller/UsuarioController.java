@@ -1,13 +1,13 @@
 package br.com.kauanallyson.kcrm.controller;
 
 import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
-import br.com.kauanallyson.kcrm.dto.CadastroUsuarioRequest;
-import br.com.kauanallyson.kcrm.dto.DesativacaoRequest;
-import br.com.kauanallyson.kcrm.dto.HistoricoAcessoResponse;
-import br.com.kauanallyson.kcrm.dto.PerfilRequest;
-import br.com.kauanallyson.kcrm.dto.ReativacaoRequest;
-import br.com.kauanallyson.kcrm.dto.UsuarioRequest;
-import br.com.kauanallyson.kcrm.dto.UsuarioResponse;
+import br.com.kauanallyson.kcrm.dto.usuario.CadastroUsuarioRequest;
+import br.com.kauanallyson.kcrm.dto.usuario.DesativacaoRequest;
+import br.com.kauanallyson.kcrm.dto.usuario.HistoricoAcessoResponse;
+import br.com.kauanallyson.kcrm.dto.usuario.PerfilRequest;
+import br.com.kauanallyson.kcrm.dto.usuario.ReativacaoRequest;
+import br.com.kauanallyson.kcrm.dto.usuario.UsuarioRequest;
+import br.com.kauanallyson.kcrm.dto.usuario.UsuarioResponse;
 import br.com.kauanallyson.kcrm.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

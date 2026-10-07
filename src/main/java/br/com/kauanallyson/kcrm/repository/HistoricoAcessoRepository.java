@@ -1,6 +1,6 @@
 package br.com.kauanallyson.kcrm.repository;
 
-import br.com.kauanallyson.kcrm.model.HistoricoAcesso;
+import br.com.kauanallyson.kcrm.model.usuario.HistoricoAcesso;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

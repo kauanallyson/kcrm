@@ -1,4 +1,4 @@
-package br.com.kauanallyson.kcrm.model;
+package br.com.kauanallyson.kcrm.model.common;
 
 import org.junit.jupiter.api.Test;
 

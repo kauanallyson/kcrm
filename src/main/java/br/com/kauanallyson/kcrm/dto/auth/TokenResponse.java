@@ -1,4 +1,4 @@
-package br.com.kauanallyson.kcrm.dto;
+package br.com.kauanallyson.kcrm.dto.auth;
 
 public record TokenResponse(
         String token,

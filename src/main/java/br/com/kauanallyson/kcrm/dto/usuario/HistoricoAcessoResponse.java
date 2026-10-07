@@ -1,7 +1,7 @@
-package br.com.kauanallyson.kcrm.dto;
+package br.com.kauanallyson.kcrm.dto.usuario;
 
-import br.com.kauanallyson.kcrm.model.HistoricoAcesso;
-import br.com.kauanallyson.kcrm.model.TipoMovimentacao;
+import br.com.kauanallyson.kcrm.model.usuario.HistoricoAcesso;
+import br.com.kauanallyson.kcrm.model.usuario.TipoMovimentacao;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

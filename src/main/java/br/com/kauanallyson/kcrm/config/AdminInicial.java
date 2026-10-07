@@ -1,10 +1,10 @@
 package br.com.kauanallyson.kcrm.config;
 
 import br.com.kauanallyson.kcrm.exception.UsuarioJaExisteException;
-import br.com.kauanallyson.kcrm.model.Cpf;
-import br.com.kauanallyson.kcrm.model.Email;
-import br.com.kauanallyson.kcrm.model.Perfil;
-import br.com.kauanallyson.kcrm.model.Usuario;
+import br.com.kauanallyson.kcrm.model.common.Cpf;
+import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.usuario.Perfil;
+import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 import br.com.kauanallyson.kcrm.service.UsuarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

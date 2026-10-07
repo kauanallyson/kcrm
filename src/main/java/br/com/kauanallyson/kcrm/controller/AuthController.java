@@ -1,9 +1,9 @@
 package br.com.kauanallyson.kcrm.controller;
 
 import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
-import br.com.kauanallyson.kcrm.dto.LoginRequest;
-import br.com.kauanallyson.kcrm.dto.TokenResponse;
-import br.com.kauanallyson.kcrm.dto.UsuarioResponse;
+import br.com.kauanallyson.kcrm.dto.auth.LoginRequest;
+import br.com.kauanallyson.kcrm.dto.auth.TokenResponse;
+import br.com.kauanallyson.kcrm.dto.usuario.UsuarioResponse;
 import br.com.kauanallyson.kcrm.service.AuthService;
 import br.com.kauanallyson.kcrm.service.UsuarioService;
 import jakarta.validation.Valid;

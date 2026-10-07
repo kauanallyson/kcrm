@@ -1,15 +1,13 @@
-package br.com.kauanallyson.kcrm.dto;
+package br.com.kauanallyson.kcrm.dto.usuario;
 
-import br.com.kauanallyson.kcrm.model.Cpf;
-import br.com.kauanallyson.kcrm.model.Perfil;
-import br.com.kauanallyson.kcrm.model.Usuario;
+import br.com.kauanallyson.kcrm.model.common.Cpf;
+import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.br.CPF;
 
-public record CadastroUsuarioRequest(
+public record UsuarioRequest(
         @NotBlank
         String nome,
         @NotBlank
@@ -24,11 +22,9 @@ public record CadastroUsuarioRequest(
         @NotBlank
         String telefone,
         @NotBlank
-        String endereco,
-        @NotNull
-        Perfil perfil
+        String endereco
 ) {
     public Usuario.Dados toDados() {
-        return new Usuario.Dados(nome, new Cpf(cpf), new br.com.kauanallyson.kcrm.model.Email(email), telefone, endereco);
+        return new Usuario.Dados(nome, new Cpf(cpf), new br.com.kauanallyson.kcrm.model.common.Email(email), telefone, endereco);
     }
 }

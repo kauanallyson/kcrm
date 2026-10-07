@@ -2,9 +2,9 @@ package br.com.kauanallyson.kcrm.controller;
 
 import br.com.kauanallyson.kcrm.TestApi;
 import br.com.kauanallyson.kcrm.TestcontainersConfig;
-import br.com.kauanallyson.kcrm.model.Email;
-import br.com.kauanallyson.kcrm.model.Perfil;
-import br.com.kauanallyson.kcrm.model.Usuario;
+import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.usuario.Perfil;
+import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package br.com.kauanallyson.kcrm.model;
+package br.com.kauanallyson.kcrm.model.usuario;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 

@@ -1,4 +1,4 @@
-package br.com.kauanallyson.kcrm.model;
+package br.com.kauanallyson.kcrm.model.common;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
@@ -30,19 +30,6 @@ final class ValueConverters {
         @Override
         public Cpf convertToEntityAttribute(String value) {
             return value == null ? null : new Cpf(value);
-        }
-    }
-
-    @Converter(autoApply = true)
-    static class SenhaHashConverter implements AttributeConverter<SenhaHash, String> {
-        @Override
-        public String convertToDatabaseColumn(SenhaHash hash) {
-            return hash == null ? null : hash.value();
-        }
-
-        @Override
-        public SenhaHash convertToEntityAttribute(String value) {
-            return value == null ? null : SenhaHash.fromStored(value);
         }
     }
 }

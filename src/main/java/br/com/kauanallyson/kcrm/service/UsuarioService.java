@@ -1,12 +1,12 @@
 package br.com.kauanallyson.kcrm.service;
 
-import br.com.kauanallyson.kcrm.dto.CadastroUsuarioRequest;
-import br.com.kauanallyson.kcrm.dto.UsuarioRequest;
+import br.com.kauanallyson.kcrm.dto.usuario.CadastroUsuarioRequest;
+import br.com.kauanallyson.kcrm.dto.usuario.UsuarioRequest;
 import br.com.kauanallyson.kcrm.exception.UsuarioJaExisteException;
 import br.com.kauanallyson.kcrm.exception.UsuarioNaoEncontradoException;
-import br.com.kauanallyson.kcrm.model.HistoricoAcesso;
-import br.com.kauanallyson.kcrm.model.Perfil;
-import br.com.kauanallyson.kcrm.model.Usuario;
+import br.com.kauanallyson.kcrm.model.usuario.HistoricoAcesso;
+import br.com.kauanallyson.kcrm.model.usuario.Perfil;
+import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 import br.com.kauanallyson.kcrm.repository.HistoricoAcessoRepository;
 import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
