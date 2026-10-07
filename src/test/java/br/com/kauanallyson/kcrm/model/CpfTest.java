@@ -7,22 +7,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CpfTest {
     @Test
-    void formattedAndBareCpfAreEqual() {
+    void cpfFormatadoESemFormatacaoSaoIguais() {
         assertThat(new Cpf("529.982.247-25")).isEqualTo(new Cpf("52998224725"));
     }
 
     @Test
-    void invalidCheckDigitIsRejected() {
+    void digitoVerificadorInvalidoEhRejeitado() {
         assertThatThrownBy(() -> new Cpf("52998224726")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void repeatedDigitsAreRejected() {
+    void digitosRepetidosSaoRejeitados() {
         assertThatThrownBy(() -> new Cpf("11111111111")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void emailIsNormalized() {
+    void emailEhNormalizado() {
         assertThat(new Email("  Alice@Test.COM ")).isEqualTo(new Email("alice@test.com"));
     }
 }

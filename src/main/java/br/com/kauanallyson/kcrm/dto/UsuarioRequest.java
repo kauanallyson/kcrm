@@ -1,15 +1,15 @@
 package br.com.kauanallyson.kcrm.dto;
 
 import br.com.kauanallyson.kcrm.model.Cpf;
-import br.com.kauanallyson.kcrm.model.User;
+import br.com.kauanallyson.kcrm.model.Usuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.br.CPF;
 
-public record UserRequest(
+public record UsuarioRequest(
         @NotBlank
-        String name,
+        String nome,
         @NotBlank
         @CPF
         String cpf,
@@ -17,14 +17,14 @@ public record UserRequest(
         @Email
         String email,
         @NotBlank
-        @Size(min = 8, message = "must be at least 8 characters")
-        String password,
+        @Size(min = 8, message = "deve ter pelo menos 8 caracteres")
+        String senha,
         @NotBlank
-        String phone,
+        String telefone,
         @NotBlank
-        String address
+        String endereco
 ) {
-    public User.Profile toProfile() {
-        return new User.Profile(name, new Cpf(cpf), new br.com.kauanallyson.kcrm.model.Email(email), phone, address);
+    public Usuario.Dados toDados() {
+        return new Usuario.Dados(nome, new Cpf(cpf), new br.com.kauanallyson.kcrm.model.Email(email), telefone, endereco);
     }
 }

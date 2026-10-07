@@ -3,10 +3,10 @@ package br.com.kauanallyson.kcrm.controller;
 import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
 import br.com.kauanallyson.kcrm.dto.LoginRequest;
 import br.com.kauanallyson.kcrm.dto.TokenResponse;
-import br.com.kauanallyson.kcrm.dto.UserRequest;
-import br.com.kauanallyson.kcrm.dto.UserResponse;
+import br.com.kauanallyson.kcrm.dto.UsuarioRequest;
+import br.com.kauanallyson.kcrm.dto.UsuarioResponse;
 import br.com.kauanallyson.kcrm.service.AuthService;
-import br.com.kauanallyson.kcrm.service.UserService;
+import br.com.kauanallyson.kcrm.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
-    private final UserService userService;
+    private final UsuarioService usuarioService;
 
-    public AuthController(AuthService authService, UserService userService) {
+    public AuthController(AuthService authService, UsuarioService usuarioService) {
         this.authService = authService;
-        this.userService = userService;
+        this.usuarioService = usuarioService;
     }
 
     @PostMapping("/login")
@@ -34,12 +34,12 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<TokenResponse> register(@RequestBody @Valid UserRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    public ResponseEntity<TokenResponse> cadastrar(@RequestBody @Valid UsuarioRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.cadastrar(request));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> me(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return ResponseEntity.ok(UserResponse.from(userService.findById(principal.id())));
+    public ResponseEntity<UsuarioResponse> me(@AuthenticationPrincipal AuthenticatedUser principal) {
+        return ResponseEntity.ok(UsuarioResponse.from(usuarioService.buscarPorId(principal.id())));
     }
 }

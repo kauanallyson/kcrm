@@ -2,7 +2,7 @@ package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.TestcontainersConfig;
 import br.com.kauanallyson.kcrm.model.Email;
-import br.com.kauanallyson.kcrm.repository.UserRepository;
+import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,179 +29,179 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(TestcontainersConfig.class)
 class AuthIntegrationTest {
-    private static final String PASSWORD = "password123";
+    private static final String SENHA = "senha12345";
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private UserRepository userRepository;
+    private UsuarioRepository usuarioRepository;
 
     @Test
-    void registerReturnsTokenAndHashesPassword() throws Exception {
+    void cadastroRetornaTokenEGuardaHashDaSenha() throws Exception {
         String email = randomEmail();
 
-        postJson("/api/auth/register", userJson(email, randomCpf()))
+        postJson("/api/auth/register", usuarioJson(email, randomCpf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andExpect(jsonPath("$.type").value("Bearer"));
 
-        String stored = userRepository.findByEmail(new Email(email)).orElseThrow().getPasswordHash().value();
-        assertThat(stored).startsWith("{bcrypt}").doesNotContain(PASSWORD);
+        String stored = usuarioRepository.findByEmail(new Email(email)).orElseThrow().getSenhaHash().value();
+        assertThat(stored).startsWith("{bcrypt}").doesNotContain(SENHA);
     }
 
     @Test
-    void registerWithDuplicateEmailIsConflict() throws Exception {
+    void cadastroComEmailDuplicadoEhConflito() throws Exception {
         String email = randomEmail();
-        register(email);
+        cadastrar(email);
 
-        postJson("/api/auth/register", userJson(email, randomCpf()))
+        postJson("/api/auth/register", usuarioJson(email, randomCpf()))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("USER_ALREADY_EXISTS"));
+                .andExpect(jsonPath("$.code").value("USUARIO_JA_EXISTE"));
     }
 
     @Test
-    void registerWithDuplicateCpfIsConflict() throws Exception {
+    void cadastroComCpfDuplicadoEhConflito() throws Exception {
         String cpf = randomCpf();
-        register(randomEmail(), cpf);
+        cadastrar(randomEmail(), cpf);
 
-        postJson("/api/auth/register", userJson(randomEmail(), cpf))
+        postJson("/api/auth/register", usuarioJson(randomEmail(), cpf))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("USER_ALREADY_EXISTS"));
+                .andExpect(jsonPath("$.code").value("USUARIO_JA_EXISTE"));
     }
 
     @Test
-    void loginWithValidCredentialsReturnsToken() throws Exception {
+    void loginComCredenciaisValidasRetornaToken() throws Exception {
         String email = randomEmail();
-        register(email);
+        cadastrar(email);
 
-        postJson("/api/auth/login", loginJson(email, PASSWORD))
+        postJson("/api/auth/login", loginJson(email, SENHA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isNotEmpty());
     }
 
     @Test
-    void loginWithWrongPasswordOrUnknownEmailIsUnauthorizedWithSameMessage() throws Exception {
+    void loginComSenhaErradaOuEmailDesconhecidoEhNaoAutorizadoComMesmaMensagem() throws Exception {
         String email = randomEmail();
-        register(email);
+        cadastrar(email);
 
-        postJson("/api/auth/login", loginJson(email, "wrongpass123"))
+        postJson("/api/auth/login", loginJson(email, "senhaerrada123"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
-        postJson("/api/auth/login", loginJson(randomEmail(), PASSWORD))
+                .andExpect(jsonPath("$.code").value("CREDENCIAIS_INVALIDAS"));
+        postJson("/api/auth/login", loginJson(randomEmail(), SENHA))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
+                .andExpect(jsonPath("$.code").value("CREDENCIAIS_INVALIDAS"));
     }
 
     @Test
-    void meReturnsTheLoggedInUser() throws Exception {
+    void meRetornaOUsuarioLogado() throws Exception {
         String email = randomEmail();
-        String token = register(email);
+        String token = cadastrar(email);
 
         mockMvc.perform(get("/api/auth/me").header("Authorization", bearer(token)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(idOf(email).toString()))
                 .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.password").doesNotExist());
+                .andExpect(jsonPath("$.senha").doesNotExist());
     }
 
     @Test
-    void meWithoutTokenIsUnauthorized() throws Exception {
+    void meSemTokenEhNaoAutorizado() throws Exception {
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+                .andExpect(jsonPath("$.code").value("NAO_AUTENTICADO"));
     }
 
     @Test
-    void protectedRouteWithoutTokenIsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/users/" + UUID.randomUUID()))
+    void rotaProtegidaSemTokenEhNaoAutorizada() throws Exception {
+        mockMvc.perform(get("/api/usuarios/" + UUID.randomUUID()))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+                .andExpect(jsonPath("$.code").value("NAO_AUTENTICADO"));
     }
 
     @Test
-    void protectedRouteWithInvalidTokenIsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/users/" + UUID.randomUUID()).header("Authorization", "Bearer abc.def.ghi"))
+    void rotaProtegidaComTokenInvalidoEhNaoAutorizada() throws Exception {
+        mockMvc.perform(get("/api/usuarios/" + UUID.randomUUID()).header("Authorization", "Bearer abc.def.ghi"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void userCanAccessOnlyThemselves() throws Exception {
+    void usuarioSoAcessaASiMesmo() throws Exception {
         String emailA = randomEmail();
         String cpfA = randomCpf();
-        String tokenA = register(emailA, cpfA);
+        String tokenA = cadastrar(emailA, cpfA);
         String emailB = randomEmail();
-        register(emailB);
+        cadastrar(emailB);
         UUID idA = idOf(emailA);
         UUID idB = idOf(emailB);
 
-        mockMvc.perform(get("/api/users/" + idA).header("Authorization", bearer(tokenA)))
+        mockMvc.perform(get("/api/usuarios/" + idA).header("Authorization", bearer(tokenA)))
                 .andExpect(status().isOk());
-        mockMvc.perform(json(put("/api/users/" + idA), userJson(emailA, cpfA)).header("Authorization", bearer(tokenA)))
+        mockMvc.perform(json(put("/api/usuarios/" + idA), usuarioJson(emailA, cpfA)).header("Authorization", bearer(tokenA)))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/users/" + idB).header("Authorization", bearer(tokenA)))
+        mockMvc.perform(get("/api/usuarios/" + idB).header("Authorization", bearer(tokenA)))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(json(put("/api/users/" + idB), userJson(emailB, randomCpf())).header("Authorization", bearer(tokenA)))
+        mockMvc.perform(json(put("/api/usuarios/" + idB), usuarioJson(emailB, randomCpf())).header("Authorization", bearer(tokenA)))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(delete("/api/users/" + idB).header("Authorization", bearer(tokenA)))
+        mockMvc.perform(delete("/api/usuarios/" + idB).header("Authorization", bearer(tokenA)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+                .andExpect(jsonPath("$.code").value("ACESSO_NEGADO"));
     }
 
     @Test
-    void userCanDeleteThemselvesAndTheirTokenStopsWorking() throws Exception {
+    void usuarioPodeSeExcluirESeuTokenDeixaDeFuncionar() throws Exception {
         String email = randomEmail();
-        String token = register(email);
+        String token = cadastrar(email);
         UUID id = idOf(email);
 
-        mockMvc.perform(delete("/api/users/" + id).header("Authorization", bearer(token)))
+        mockMvc.perform(delete("/api/usuarios/" + id).header("Authorization", bearer(token)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/users/" + id).header("Authorization", bearer(token)))
+        mockMvc.perform(get("/api/usuarios/" + id).header("Authorization", bearer(token)))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void listAndCreateUserRoutesAreGone() throws Exception {
-        String token = register(randomEmail());
+    void rotasDeListarECriarUsuarioNaoExistem() throws Exception {
+        String token = cadastrar(randomEmail());
 
-        mockMvc.perform(get("/api/users").header("Authorization", bearer(token)))
+        mockMvc.perform(get("/api/usuarios").header("Authorization", bearer(token)))
                 .andExpect(status().isNotFound());
-        mockMvc.perform(json(post("/api/users"), userJson(randomEmail(), randomCpf())).header("Authorization", bearer(token)))
+        mockMvc.perform(json(post("/api/usuarios"), usuarioJson(randomEmail(), randomCpf())).header("Authorization", bearer(token)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void malformedJsonIsBadRequest() throws Exception {
+    void jsonMalformadoEhRequisicaoInvalida() throws Exception {
         postJson("/api/auth/login", "{not json")
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
-    void invalidFieldsReturnValidationErrors() throws Exception {
-        postJson("/api/auth/register", userJson("not-an-email", "123"))
+    void camposInvalidosRetornamErrosDeValidacao() throws Exception {
+        postJson("/api/auth/register", usuarioJson("not-an-email", "123"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.code").value("VALIDACAO_FALHOU"))
                 .andExpect(jsonPath("$.errors.email").exists())
                 .andExpect(jsonPath("$.errors.cpf").exists());
     }
 
     @Test
-    void invalidIdIsBadRequest() throws Exception {
-        String token = register(randomEmail());
+    void idInvalidoEhRequisicaoInvalida() throws Exception {
+        String token = cadastrar(randomEmail());
 
-        mockMvc.perform(get("/api/users/not-a-uuid").header("Authorization", bearer(token)))
+        mockMvc.perform(get("/api/usuarios/not-a-uuid").header("Authorization", bearer(token)))
                 .andExpect(status().isBadRequest());
     }
 
-    private String register(String email) throws Exception {
-        return register(email, randomCpf());
+    private String cadastrar(String email) throws Exception {
+        return cadastrar(email, randomCpf());
     }
 
-    private String register(String email, String cpf) throws Exception {
-        String body = postJson("/api/auth/register", userJson(email, cpf))
+    private String cadastrar(String email, String cpf) throws Exception {
+        String body = postJson("/api/auth/register", usuarioJson(email, cpf))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return JsonPath.read(body, "$.token");
@@ -216,7 +216,7 @@ class AuthIntegrationTest {
     }
 
     private UUID idOf(String email) {
-        return userRepository.findByEmail(new Email(email)).orElseThrow().getId();
+        return usuarioRepository.findByEmail(new Email(email)).orElseThrow().getId();
     }
 
     private static String bearer(String token) {
@@ -224,10 +224,10 @@ class AuthIntegrationTest {
     }
 
     private static String randomEmail() {
-        return "user-" + UUID.randomUUID() + "@test.com";
+        return "usuario-" + UUID.randomUUID() + "@test.com";
     }
 
-    // Builds a CPF with valid check digits so it passes @CPF validation
+    // Gera um CPF com dígitos verificadores válidos para passar na validação @CPF
     private static String randomCpf() {
         int[] d = new int[11];
         for (int i = 0; i < 9; i++) {
@@ -248,15 +248,15 @@ class AuthIntegrationTest {
         return cpf.toString();
     }
 
-    private static String userJson(String email, String cpf) {
+    private static String usuarioJson(String email, String cpf) {
         return """
-                {"name":"Test","cpf":"%s","email":"%s","password":"%s","phone":"1","address":"a"}
-                """.formatted(cpf, email, PASSWORD);
+                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"1","endereco":"a"}
+                """.formatted(cpf, email, SENHA);
     }
 
-    private static String loginJson(String email, String password) {
+    private static String loginJson(String email, String senha) {
         return """
-                {"email":"%s","password":"%s"}
-                """.formatted(email, password);
+                {"email":"%s","senha":"%s"}
+                """.formatted(email, senha);
     }
 }

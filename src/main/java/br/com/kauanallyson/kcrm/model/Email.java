@@ -8,7 +8,7 @@ public record Email(String value) {
         Objects.requireNonNull(value, "email");
         value = value.trim().toLowerCase(Locale.ROOT);
         if (value.isEmpty()) {
-            throw new IllegalArgumentException("E-mail must not be blank");
+            throw new IllegalArgumentException("O e-mail não pode ficar em branco");
         }
     }
 }

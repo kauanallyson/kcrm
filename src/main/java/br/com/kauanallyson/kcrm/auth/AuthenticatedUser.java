@@ -1,6 +1,6 @@
 package br.com.kauanallyson.kcrm.auth;
 
-import br.com.kauanallyson.kcrm.model.User;
+import br.com.kauanallyson.kcrm.model.Usuario;
 import lombok.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,10 +9,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public record AuthenticatedUser(UUID id, String email, String passwordHash) implements UserDetails {
+public record AuthenticatedUser(UUID id, String email, String senhaHash) implements UserDetails {
 
-    public static AuthenticatedUser from(User user) {
-        return new AuthenticatedUser(user.getId(), user.getEmail().value(), user.getPasswordHash().value());
+    public static AuthenticatedUser from(Usuario usuario) {
+        return new AuthenticatedUser(usuario.getId(), usuario.getEmail().value(), usuario.getSenhaHash().value());
     }
 
     public UUID getId() {
@@ -27,7 +27,7 @@ public record AuthenticatedUser(UUID id, String email, String passwordHash) impl
 
     @Override
     public String getPassword() {
-        return passwordHash;
+        return senhaHash;
     }
 
     @Override

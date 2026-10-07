@@ -19,11 +19,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtService jwtService;
-    private final AuthenticatedUserService userService;
+    private final AuthenticatedUserService authenticatedUserService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, AuthenticatedUserService userService) {
+    public JwtAuthenticationFilter(JwtService jwtService, AuthenticatedUserService authenticatedUserService) {
         this.jwtService = jwtService;
-        this.userService = userService;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     @Override
@@ -33,8 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Unresolvable token: continue unauthenticated, the entry point answers 401
         bearerToken(request)
                 .flatMap(jwtService::parseSubject)
-                .flatMap(userService::loadById)
-                .ifPresent(user -> authenticate(user, request));
+                .flatMap(authenticatedUserService::loadById)
+                .ifPresent(principal -> authenticate(principal, request));
 
         filterChain.doFilter(request, response);
     }
@@ -48,9 +48,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .map(header -> header.substring(BEARER_PREFIX.length()));
     }
 
-    private static void authenticate(AuthenticatedUser user, HttpServletRequest request) {
+    private static void authenticate(AuthenticatedUser principal, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
-                .authenticated(user, null, user.getAuthorities());
+                .authenticated(principal, null, principal.getAuthorities());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();

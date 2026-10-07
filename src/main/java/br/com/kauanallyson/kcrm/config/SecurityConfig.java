@@ -21,7 +21,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService,
-                                                   AuthenticatedUserService userService,
+                                                   AuthenticatedUserService authenticatedUserService,
                                                    SecurityProblemHandler problemHandler) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(problemHandler)
                         .accessDeniedHandler(problemHandler))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService, userService),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService, authenticatedUserService),
                         UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

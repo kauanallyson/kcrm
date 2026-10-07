@@ -34,15 +34,15 @@ final class ValueConverters {
     }
 
     @Converter(autoApply = true)
-    static class PasswordHashConverter implements AttributeConverter<PasswordHash, String> {
+    static class SenhaHashConverter implements AttributeConverter<SenhaHash, String> {
         @Override
-        public String convertToDatabaseColumn(PasswordHash hash) {
+        public String convertToDatabaseColumn(SenhaHash hash) {
             return hash == null ? null : hash.value();
         }
 
         @Override
-        public PasswordHash convertToEntityAttribute(String value) {
-            return value == null ? null : PasswordHash.fromStored(value);
+        public SenhaHash convertToEntityAttribute(String value) {
+            return value == null ? null : SenhaHash.fromStored(value);
         }
     }
 }

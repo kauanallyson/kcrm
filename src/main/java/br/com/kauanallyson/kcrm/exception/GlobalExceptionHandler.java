@@ -36,19 +36,19 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        return Problems.of(ErrorCode.INVALID_PARAMETER,
-                "Invalid value for '" + ex.getName() + "': " + ex.getValue());
+        return Problems.of(ErrorCode.PARAMETRO_INVALIDO,
+                "Valor inválido para '" + ex.getName() + "': " + ex.getValue());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrity(DataIntegrityViolationException ex) {
-        return Problems.of(ErrorCode.DATA_CONFLICT, "Data conflicts with an existing record");
+        return Problems.of(ErrorCode.CONFLITO_DE_DADOS, "Os dados conflitam com um registro existente");
     }
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception ex) {
         log.error("Unexpected error", ex);
-        return Problems.of(ErrorCode.INTERNAL_ERROR, "Unexpected error");
+        return Problems.of(ErrorCode.ERRO_INTERNO, "Erro inesperado");
     }
 
     @Override
@@ -63,7 +63,7 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
                         e -> String.valueOf(e.getDefaultMessage()),
                         (first, second) -> first));
 
-        ProblemDetail problem = Problems.of(ErrorCode.VALIDATION_FAILED, "Validation failed");
+        ProblemDetail problem = Problems.of(ErrorCode.VALIDACAO_FALHOU, "Falha na validação");
         problem.setProperty("errors", errors);
         return ResponseEntity.badRequest().headers(headers).body(problem);
     }

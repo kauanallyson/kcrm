@@ -1,7 +1,7 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.model.Email;
-import br.com.kauanallyson.kcrm.repository.UserRepository;
+import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
 import lombok.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,21 +14,21 @@ import java.util.UUID;
 @Service
 public class AuthenticatedUserService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public AuthenticatedUserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public AuthenticatedUserService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
     @NonNull
     public UserDetails loadUserByUsername(@NonNull String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(new Email(email))
+        return usuarioRepository.findByEmail(new Email(email))
                 .map(AuthenticatedUser::from)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }
 
     public Optional<AuthenticatedUser> loadById(UUID id) {
-        return userRepository.findById(id).map(AuthenticatedUser::from);
+        return usuarioRepository.findById(id).map(AuthenticatedUser::from);
     }
 }

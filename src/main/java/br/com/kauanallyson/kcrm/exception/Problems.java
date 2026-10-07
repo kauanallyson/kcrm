@@ -13,10 +13,10 @@ public final class Problems {
     }
 
     public static ProblemDetail unauthenticated() {
-        return of(ErrorCode.UNAUTHENTICATED, "Missing or invalid token");
+        return of(ErrorCode.NAO_AUTENTICADO, "Token ausente ou inválido");
     }
 
     public static ProblemDetail accessDenied() {
-        return of(ErrorCode.ACCESS_DENIED, "Access denied");
+        return of(ErrorCode.ACESSO_NEGADO, "Acesso negado");
     }
 }

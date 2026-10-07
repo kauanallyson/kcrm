@@ -8,6 +8,6 @@ public record LoginRequest(
         @Email
         String email,
         @NotBlank
-        String password
+        String senha
 ) {
 }

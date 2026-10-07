@@ -9,7 +9,7 @@ public record Cpf(String value) {
         Objects.requireNonNull(value, "cpf");
         value = value.replaceAll("\\D", "");
         if (!isValid(value)) {
-            throw new IllegalArgumentException("Invalid CPF");
+            throw new IllegalArgumentException("CPF inválido");
         }
     }
 
