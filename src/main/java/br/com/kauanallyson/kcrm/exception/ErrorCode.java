@@ -4,6 +4,9 @@ import org.springframework.http.HttpStatus;
 
 public enum ErrorCode {
     USUARIO_NAO_ENCONTRADO(HttpStatus.NOT_FOUND),
+    CLIENTE_NAO_ENCONTRADO(HttpStatus.NOT_FOUND),
+    CORRETOR_INVALIDO(HttpStatus.UNPROCESSABLE_CONTENT),
+    TRANSFERENCIA_PARA_O_MESMO_CORRETOR(HttpStatus.CONFLICT),
     USUARIO_JA_EXISTE(HttpStatus.CONFLICT),
     ULTIMO_ADMIN(HttpStatus.CONFLICT),
     USUARIO_JA_DESATIVADO(HttpStatus.CONFLICT),
