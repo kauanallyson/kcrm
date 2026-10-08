@@ -23,7 +23,7 @@ Usuário que é corretor de imóveis e atende Clientes.
 _Evitar_: Agente, vendedor, broker, realtor
 
 **Desativação**:
-Ato de um Admin que impede um Usuário de acessar o CRM, sem apagá-lo, registrando quando ocorreu e o motivo. O último Admin ativo não pode ser desativado. Os Clientes de um Corretor desativado são transferidos pelo Admin para outro Corretor.
+Ato de um Admin que impede um Usuário de acessar o CRM, sem apagá-lo, registrando quando ocorreu e o motivo. O último Admin ativo não pode ser desativado. Os Clientes de um Corretor desativado passam por Transferência a outro Corretor, feita pelo Admin.
 _Evitar_: Exclusão, remoção, bloqueio, banimento
 
 **Reativação**:
@@ -43,8 +43,28 @@ _Evitar_: Movimentação, ação, ocorrência, registro
 ### Atendimento
 
 **Cliente**:
-Pessoa atendida pela imobiliária, desde o primeiro contato vindo de um anúncio. Começa identificada apenas por nome e WhatsApp, e seus dados pessoais são coletados ao longo do Atendimento. É atendida por um ou mais Corretores; o Admin vê todos os Clientes. A mesma pessoa pode ser Usuário e Cliente.
+Pessoa atendida pela imobiliária, desde o primeiro contato vindo de um anúncio. Começa identificada apenas por nome e WhatsApp, e seus dados pessoais são coletados ao longo do Atendimento. É atendida por exatamente um Corretor, que pode ser trocado por Transferência; o Corretor que cadastra o Cliente passa a atendê-lo, e o Admin escolhe o Corretor ao cadastrar. Cada Corretor vê só os seus Clientes; o Admin vê todos. Dois Clientes podem ter o mesmo WhatsApp. Todo Cliente tem uma Origem. A mesma pessoa pode ser Usuário e Cliente.
 _Evitar_: Lead, contato, prospect, interessado
+
+**Transferência**:
+Troca do Corretor que atende um Cliente, feita só pelo Admin. Fica registrada no Histórico.
+_Evitar_: Reatribuição, repasse, troca de dono
+
+**Origem**:
+Canal pelo qual o Cliente chegou: Instagram, Site ou Indicação. Na Indicação, guarda-se o nome de quem indicou.
+_Evitar_: Fonte, canal, lead source
+
+**Etapa**:
+Ponto do funil em que uma Negociação está, visível e definido explicitamente. Pode avançar ou voltar. As Etapas são: Novo, Em Atendimento, Visita Agendada, Proposta Enviada, Aguardando Assinatura, Aguardando Sinal, Negócio Fechado e Enviada à Incorporadora.
+_Evitar_: Status, fase, estágio
+
+**Negociação**:
+O interesse de um Cliente em um Imóvel específico, desde o primeiro contato sobre ele. Tem uma Etapa, e é nela que acontecem as Visitas e as Propostas. Um Cliente pode ter várias Negociações, uma por Imóvel, e cada uma pode ser Cancelada sozinha. Quando o Imóvel vira Negócio de outro Cliente, as demais Negociações dele são Canceladas automaticamente, registrando que o Imóvel foi vendido a outro Cliente.
+_Evitar_: Oportunidade, interesse, deal, pipeline
+
+**Perdida**:
+Negociação encerrada porque o Cliente desistiu daquele Imóvel; sua Proposta aberta é Cancelada junto. Vale só para aquela Negociação: o Cliente segue com as demais. Conta na conversão do Corretor.
+_Evitar_: Inativa, arquivada, desistência, cliente perdido
 
 **Atendimento**:
 A condução de um Cliente pelo funil, do primeiro contato até o envio do Negócio à Incorporadora.
@@ -55,14 +75,14 @@ Quanto o Cliente pode pagar, usado para verificar se um Plano de Pagamento cabe 
 _Evitar_: Cotação, budget
 
 **Visita**:
-Ida agendada do Cliente ao Imóvel para conhecê-lo antes de fechar.
+Ida agendada do Cliente ao Imóvel de uma Negociação para conhecê-lo antes de fechar.
 _Evitar_: Tour, agendamento
 
 **Referência**:
 Pessoa de contato indicada pelo Cliente durante o fechamento. São exigidas duas.
 _Evitar_: Fiador, avalista, indicação
 
-### Negociação
+### Propostas e Negócios
 
 **Plano de Pagamento**:
 Condição de pagamento negociada em cada Proposta: uma entrada percentual mais um número de parcelas de valor fixo. Uma Proposta pode ou não ter Financiamento; sem ele, o Plano é pago direto à Incorporadora.
@@ -77,8 +97,16 @@ Resultado registrado de uma consulta ao simulador de Financiamento da Caixa (tax
 _Evitar_: Cotação, orçamento
 
 **Proposta**:
-Transação oferecida por um Cliente para um Imóvel, com um Plano de Pagamento. Um Cliente pode ter várias Propostas abertas ao mesmo tempo. É assinada via gov.br e enviada à Incorporadora. Várias Propostas podem estar abertas para o mesmo Imóvel; a primeira a ter o Sinal pago vira Negócio e as demais são Canceladas automaticamente.
+Transação oferecida por um Cliente dentro de uma Negociação, para o Imóvel dela, com um Plano de Pagamento e a Comissão do Corretor. Pode ser editada (por exemplo, quando o Cliente reformula), e cada edição fica no Histórico. Um Cliente pode ter várias Propostas abertas ao mesmo tempo. É assinada via gov.br e enviada à Incorporadora. Várias Propostas podem estar abertas para o mesmo Imóvel; a primeira a ter o Sinal pago vira Negócio e as demais são Canceladas automaticamente.
 _Evitar_: Contrato, pedido, oferta
+
+**Comissão**:
+Remuneração do Corretor por um Negócio: um percentual sobre o valor da Proposta, definido por ele junto com o Cliente a partir da Comissão Base do Imóvel, e que o Admin também pode alterar. Fica travada quando o Sinal é pago. É paga pela Incorporadora e está pendente ou paga.
+_Evitar_: Taxa, corretagem, honorário
+
+**Comissão Base**:
+Percentual de Comissão definido no cadastro de um Imóvel, ponto de partida para a Comissão de cada Proposta.
+_Evitar_: Comissão padrão, taxa base
 
 **Negócio**:
 Uma Proposta cujo Sinal foi pago. Antes disso, é apenas uma Proposta. Pode ser Cancelado a qualquer momento. Um Cliente pode ter vários Negócios.
@@ -89,8 +117,8 @@ Valor pago pelo Cliente à Incorporadora após assinar a Proposta, por cartão d
 _Evitar_: Entrada, reserva, caução
 
 **Cancelada**:
-Situação de uma Proposta ou de um Negócio encerrado sem se concretizar, sempre com uma justificativa.
-_Evitar_: Desistência, recusada, rejeitada, perdida
+Situação de uma Negociação, Proposta ou Negócio encerrado sem se concretizar por motivo que não é a desistência do Cliente (por exemplo, Imóvel vendido a outro Cliente ou cadastro por engano), sempre com uma justificativa. Não conta contra o Corretor.
+_Evitar_: Recusada, rejeitada
 
 **Incorporadora**:
 Empresa dona dos Loteamentos, que recebe as Propostas e o Sinal. É externa: não usa o CRM nem decide sobre as Propostas dentro dele.
@@ -99,7 +127,7 @@ _Evitar_: Construtora, loteadora, parceira
 ### Imóveis
 
 **Imóvel**:
-O que a imobiliária vende: um Lote sozinho ou uma Casa com seu Lote. Tem um Preço Base, que serve de ponto de partida para negociar cada Proposta. Está livre ou vendido; fica vendido no momento do Negócio e volta a ficar livre se o Negócio for Cancelado.
+O que a imobiliária vende: um Lote sozinho ou uma Casa com seu Lote. Tem um Preço Base e uma Comissão Base, que servem de ponto de partida para cada Proposta. Está livre ou vendido; fica vendido no momento do Negócio e volta a ficar livre se o Negócio for Cancelado.
 _Evitar_: Propriedade, unidade, produto
 
 **Loteamento**:
