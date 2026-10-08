@@ -121,29 +121,37 @@ Situação de uma Negociação, Proposta ou Negócio encerrado sem se concretiza
 _Evitar_: Recusada, rejeitada
 
 **Incorporadora**:
-Empresa dona dos Loteamentos, que recebe as Propostas e o Sinal. É externa: não usa o CRM nem decide sobre as Propostas dentro dele.
+A única empresa dona dos Loteamentos, que recebe as Propostas e o Sinal. É externa: não usa o CRM nem decide sobre as Propostas dentro dele.
 _Evitar_: Construtora, loteadora, parceira
 
 ### Imóveis
 
 **Imóvel**:
-O que a imobiliária vende: um Lote sozinho ou uma Casa com seu Lote. Tem um Preço Base e uma Comissão Base, que servem de ponto de partida para cada Proposta. Está livre ou vendido; fica vendido no momento do Negócio e volta a ficar livre se o Negócio for Cancelado.
+O que a imobiliária vende: um Lote sozinho ou uma Casa com seu Lote. Tem um Preço Base e uma Comissão Base, que servem de ponto de partida para cada Proposta. Admins e Corretores cadastram Imóveis e definem esses valores; a conferência final é do Cliente, ao assinar a Proposta. O Preço Base de uma Casa é o preço do Lote mais o da Casa. Está livre ou vendido; fica vendido no momento do Negócio e volta a ficar livre se o Negócio for Cancelado.
 _Evitar_: Propriedade, unidade, produto
 
 **Loteamento**:
-Empreendimento da Incorporadora dividido em Lotes. A Incorporadora tem vários.
+Empreendimento da Incorporadora dividido em Quadras e Lotes, com nome, cidade, endereço e Material de Marketing. A Incorporadora tem vários.
 _Evitar_: Empreendimento, condomínio, projeto
+
+**Quadra**:
+Divisão de um Loteamento que agrupa Lotes. Um Lote é identificado pela Quadra e pelo seu número, como "Quadra 3, Lote 12".
+_Evitar_: Bloco, setor
+
+**Material de Marketing**:
+Material de divulgação de um Loteamento, enviado ao Cliente no início do Atendimento. Fica no Google Drive; o CRM guarda o link da pasta de cada Loteamento.
+_Evitar_: Folder, book, apresentação
 
 **Preço Base**:
 Preço de referência de um Imóvel, antes da negociação da Proposta.
 _Evitar_: Preço de tabela, valor
 
 **Lote**:
-Terreno de um Loteamento.
+Terreno de um Loteamento, identificado por Quadra e número, com área, frente e fundo em metros. A área é informada à parte, pois Lotes irregulares não seguem frente × fundo. Pode ganhar uma Casa depois; a partir daí, só é vendido com ela.
 _Evitar_: Terreno, unidade
 
 **Casa**:
-Construção única, com características e preço próprios, sempre sobre um Lote. No futuro, também poderá ser alugada.
+Construção única, vendida na planta, com quartos, banheiros, vagas, área construída e preço próprio, sempre sobre um Lote. Um Lote com Casa só é vendido junto com ela. No futuro, também poderá ser alugada.
 _Evitar_: Residência, modelo
 
 **Tipo**:
