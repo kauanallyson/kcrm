@@ -3,6 +3,7 @@ package br.com.kauanallyson.kcrm.config;
 import br.com.kauanallyson.kcrm.exception.UsuarioJaExisteException;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.usuario.Perfil;
 import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 import br.com.kauanallyson.kcrm.service.UsuarioService;
@@ -68,7 +69,7 @@ public class AdminInicial implements ApplicationRunner {
         Usuario.Dados dados;
         try {
             dados = new Usuario.Dados(variaveis.get("ADMIN_NOME").strip(), new Cpf(variaveis.get("ADMIN_CPF")),
-                    new Email(variaveis.get("ADMIN_EMAIL")), variaveis.get("ADMIN_TELEFONE").strip(),
+                    new Email(variaveis.get("ADMIN_EMAIL")), new Telefone(variaveis.get("ADMIN_TELEFONE")),
                     variaveis.get("ADMIN_ENDERECO").strip());
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("Invalid initial Admin variables: " + e.getMessage(), e);

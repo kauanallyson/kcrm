@@ -119,6 +119,27 @@ class UsuarioIntegrationTest {
     }
 
     @Test
+    void telefoneEhGuardadoEDevolvidoFormatado() throws Exception {
+        String email = randomEmail();
+        String body = cadastroJson(email, randomCpf(), "CORRETOR").replace("\"88999990000\"", "\"88 98888 7777\"");
+
+        mockMvc.perform(comToken(json(post("/api/usuarios"), body), admin))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.telefone").value("(88) 98888-7777"));
+        assertThat(usuarioRepository.findByEmail(new Email(email)).orElseThrow().getTelefone().value())
+                .isEqualTo("(88) 98888-7777");
+    }
+
+    @Test
+    void telefoneFixoEhRejeitado() throws Exception {
+        String body = cadastroJson(randomEmail(), randomCpf(), "CORRETOR").replace("\"88999990000\"", "\"(88) 3611-0000\"");
+
+        mockMvc.perform(comToken(json(post("/api/usuarios"), body), admin))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.telefone").exists());
+    }
+
+    @Test
     void adminListaVeEEditaQualquerUsuario() throws Exception {
         String email = randomEmail();
         UUID id = api.cadastrar(email, "CORRETOR");

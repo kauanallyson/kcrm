@@ -28,7 +28,7 @@ public class TestcontainersConfig {
             registry.add("admin.email", () -> TestApi.ADMIN_EMAIL);
             registry.add("admin.senha", () -> TestApi.ADMIN_SENHA);
             registry.add("admin.cpf", () -> "529.982.247-25");
-            registry.add("admin.telefone", () -> "88999990000");
+            registry.add("admin.telefone", () -> "(88) 99999-0000");
             registry.add("admin.endereco", () -> "Rua A, 1");
         };
     }

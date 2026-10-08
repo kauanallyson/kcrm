@@ -32,4 +32,17 @@ final class ValueConverters {
             return value == null ? null : new Cpf(value);
         }
     }
+
+    @Converter(autoApply = true)
+    static class TelefoneConverter implements AttributeConverter<Telefone, String> {
+        @Override
+        public String convertToDatabaseColumn(Telefone telefone) {
+            return telefone == null ? null : telefone.value();
+        }
+
+        @Override
+        public Telefone convertToEntityAttribute(String value) {
+            return value == null ? null : new Telefone(value);
+        }
+    }
 }

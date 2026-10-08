@@ -87,13 +87,13 @@ public final class TestApi {
 
     public static String usuarioJson(String email, String cpf) {
         return """
-                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"1","endereco":"a"}
+                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"88999990000","endereco":"a"}
                 """.formatted(cpf, email, SENHA);
     }
 
     public static String cadastroJson(String email, String cpf, String perfil) {
         return """
-                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"1","endereco":"a","perfil":"%s"}
+                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"88999990000","endereco":"a","perfil":"%s"}
                 """.formatted(cpf, email, SENHA, perfil);
     }
 

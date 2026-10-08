@@ -17,7 +17,7 @@ public record UsuarioResponse(
 ) {
     public static UsuarioResponse from(Usuario usuario) {
         return new UsuarioResponse(usuario.getId(), usuario.getNome(), usuario.getCpf().value(),
-                usuario.getEmail().value(), usuario.getTelefone(), usuario.getEndereco(), usuario.getPerfil(),
+                usuario.getEmail().value(), usuario.getTelefone().value(), usuario.getEndereco(), usuario.getPerfil(),
                 usuario.isAtivo());
     }
 }

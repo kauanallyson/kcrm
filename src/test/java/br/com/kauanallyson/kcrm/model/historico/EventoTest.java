@@ -2,6 +2,7 @@ package br.com.kauanallyson.kcrm.model.historico;
 
 import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.usuario.Perfil;
 import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EventoTest {
     private static final Usuario AUTOR = Usuario.cadastrar(
-            new Usuario.Dados("Admin", new Cpf("52998224725"), new Email("admin@test.com"), "1", "a"),
+            new Usuario.Dados("Admin", new Cpf("52998224725"), new Email("admin@test.com"), new Telefone("88999990000"), "a"),
             Perfil.ADMIN, "segredo123", PasswordEncoderFactories.createDelegatingPasswordEncoder());
 
     @Test
