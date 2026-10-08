@@ -204,7 +204,7 @@ class UsuarioIntegrationTest {
                 .andExpect(jsonPath("$.code").value("VALIDACAO_FALHOU"))
                 .andExpect(jsonPath("$.errors.email").value("E-mail inválido: informe no formato nome@dominio.com"))
                 .andExpect(jsonPath("$.errors.cpf").value("CPF inválido: informe 11 dígitos, no formato 000.000.000-00"))
-                .andExpect(jsonPath("$.errors.telefone").value("Telefone inválido: DDD 20 não existe"));
+                .andExpect(jsonPath("$.errors.telefone").value("Número inválido: DDD 20 não existe"));
     }
 
     @Test

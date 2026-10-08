@@ -31,7 +31,7 @@ class TelefoneTest {
     @Test
     void telefoneNuloEhRejeitado() {
         assertThatThrownBy(() -> new Telefone(null)).isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("O telefone não pode ficar em branco");
+                .hasMessage("O número não pode ficar em branco");
     }
 
     @Test
@@ -56,7 +56,7 @@ class TelefoneTest {
     void celularQueNaoComecaCom9EhRejeitado() {
         assertThatThrownBy(() -> new Telefone("88899990000"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Telefone inválido: o celular deve começar com 9");
+                .hasMessage("Número inválido: o celular deve começar com 9");
     }
 
     @Test
