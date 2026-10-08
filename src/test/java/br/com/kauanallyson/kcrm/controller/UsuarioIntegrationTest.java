@@ -93,6 +93,23 @@ class UsuarioIntegrationTest {
     }
 
     @Test
+    void cpfEhGuardadoFormatadoEMesmoCpfComOutraGrafiaEhConflito() throws Exception {
+        String cpf = randomCpf();
+        String formatado = cpf.substring(0, 3) + "." + cpf.substring(3, 6) + "." + cpf.substring(6, 9)
+                + "-" + cpf.substring(9);
+        String email = randomEmail();
+
+        mockMvc.perform(comToken(json(post("/api/usuarios"), cadastroJson(email, cpf, "CORRETOR")), admin))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cpf").value(formatado));
+        assertThat(usuarioRepository.findByEmail(new Email(email)).orElseThrow().getCpf().value()).isEqualTo(formatado);
+
+        mockMvc.perform(comToken(json(post("/api/usuarios"), cadastroJson(randomEmail(), formatado, "CORRETOR")), admin))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("USUARIO_JA_EXISTE"));
+    }
+
+    @Test
     void camposInvalidosRetornamErrosDeValidacao() throws Exception {
         mockMvc.perform(comToken(json(post("/api/usuarios"), cadastroJson("not-an-email", "123", "CORRETOR")), admin))
                 .andExpect(status().isBadRequest())

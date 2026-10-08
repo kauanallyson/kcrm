@@ -28,7 +28,7 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 14)
     private Cpf cpf;
 
     @Column(nullable = false)

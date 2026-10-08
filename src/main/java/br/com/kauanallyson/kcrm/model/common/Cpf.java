@@ -11,6 +11,13 @@ public record Cpf(String value) {
         if (!isValid(value)) {
             throw new IllegalArgumentException("CPF inválido");
         }
+        value = format(value);
+    }
+
+    // Forma canônica guardada no banco e exposta na API: 000.000.000-00
+    private static String format(String digits) {
+        return digits.substring(0, 3) + "." + digits.substring(3, 6) + "." + digits.substring(6, 9)
+                + "-" + digits.substring(9);
     }
 
     private static boolean isValid(String digits) {

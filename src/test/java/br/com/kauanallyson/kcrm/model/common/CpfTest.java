@@ -12,6 +12,21 @@ class CpfTest {
     }
 
     @Test
+    void cpfFormatadoEhPreservado() {
+        assertThat(new Cpf("529.982.247-25").value()).isEqualTo("529.982.247-25");
+    }
+
+    @Test
+    void cpfSemFormatacaoEhFormatado() {
+        assertThat(new Cpf("52998224725").value()).isEqualTo("529.982.247-25");
+    }
+
+    @Test
+    void grafiasDiferentesDoMesmoCpfSaoIguais() {
+        assertThat(new Cpf(" 529.98224725 ")).isEqualTo(new Cpf("529982247-25"));
+    }
+
+    @Test
     void digitoVerificadorInvalidoEhRejeitado() {
         assertThatThrownBy(() -> new Cpf("52998224726")).isInstanceOf(IllegalArgumentException.class);
     }
