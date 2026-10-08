@@ -27,8 +27,18 @@ Ato de um Admin que impede um Usuário de acessar o CRM, sem apagá-lo, registra
 _Evitar_: Exclusão, remoção, bloqueio, banimento
 
 **Reativação**:
-Ato de um Admin que devolve o acesso a um Usuário desativado. Desativações e Reativações ficam todas no histórico do Usuário.
+Ato de um Admin que devolve o acesso a um Usuário desativado. Desativações, Reativações e mudanças de Perfil ficam registradas no Histórico.
 _Evitar_: Desbloqueio, restauração
+
+### Histórico
+
+**Histórico**:
+Registro único e permanente de tudo o que acontece no CRM, formado por Eventos. Nunca é editado nem apagado.
+_Evitar_: Log, auditoria, histórico de acesso
+
+**Evento**:
+Um fato registrado no Histórico: o que aconteceu, com qual Usuário, Cliente, Proposta ou outro registro, quem fez, quando e, quando houver, o motivo.
+_Evitar_: Movimentação, ação, ocorrência, registro
 
 ### Atendimento
 
