@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import br.com.kauanallyson.kcrm.exception.MotivoObrigatorioException;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.exception.UltimoAdminException;
 import br.com.kauanallyson.kcrm.exception.UsuarioJaAtivoException;
@@ -44,8 +45,8 @@ public class Usuario {
     @Column(nullable = false, length = 15)
     private Telefone telefone;
 
-    @Column(nullable = false)
-    private String endereco;
+    @Embedded
+    private Endereco endereco;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -135,6 +136,6 @@ public class Usuario {
         }
     }
 
-    public record Dados(String nome, Cpf cpf, Email email, Telefone telefone, String endereco) {
+    public record Dados(String nome, Cpf cpf, Email email, Telefone telefone, Endereco endereco) {
     }
 }

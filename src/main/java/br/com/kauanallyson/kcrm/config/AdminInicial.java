@@ -3,6 +3,7 @@ package br.com.kauanallyson.kcrm.config;
 import br.com.kauanallyson.kcrm.exception.UsuarioJaExisteException;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.usuario.Perfil;
 import br.com.kauanallyson.kcrm.model.usuario.Usuario;
@@ -26,6 +27,7 @@ public class AdminInicial implements ApplicationRunner {
 
     private final UsuarioService usuarioService;
     private final Map<String, String> variaveis = new LinkedHashMap<>();
+    private final String complemento;
 
     public AdminInicial(UsuarioService usuarioService,
                         @Value("${admin.nome}") String nome,
@@ -33,14 +35,27 @@ public class AdminInicial implements ApplicationRunner {
                         @Value("${admin.senha}") String senha,
                         @Value("${admin.cpf}") String cpf,
                         @Value("${admin.telefone}") String telefone,
-                        @Value("${admin.endereco}") String endereco) {
+                        @Value("${admin.endereco.rua}") String rua,
+                        @Value("${admin.endereco.numero}") String numero,
+                        @Value("${admin.endereco.bairro}") String bairro,
+                        @Value("${admin.endereco.cidade}") String cidade,
+                        @Value("${admin.endereco.estado}") String estado,
+                        @Value("${admin.endereco.cep}") String cep,
+                        @Value("${admin.endereco.complemento}") String complemento) {
         this.usuarioService = usuarioService;
         variaveis.put("ADMIN_NOME", nome);
         variaveis.put("ADMIN_EMAIL", email);
         variaveis.put("ADMIN_SENHA", senha);
         variaveis.put("ADMIN_CPF", cpf);
         variaveis.put("ADMIN_TELEFONE", telefone);
-        variaveis.put("ADMIN_ENDERECO", endereco);
+        variaveis.put("ADMIN_ENDERECO_RUA", rua);
+        variaveis.put("ADMIN_ENDERECO_NUMERO", numero);
+        variaveis.put("ADMIN_ENDERECO_BAIRRO", bairro);
+        variaveis.put("ADMIN_ENDERECO_CIDADE", cidade);
+        variaveis.put("ADMIN_ENDERECO_ESTADO", estado);
+        variaveis.put("ADMIN_ENDERECO_CEP", cep);
+        // Opcional: fica fora de variaveis para não contar como ausente
+        this.complemento = complemento;
     }
 
     @Override
@@ -70,7 +85,9 @@ public class AdminInicial implements ApplicationRunner {
         try {
             dados = new Usuario.Dados(variaveis.get("ADMIN_NOME").strip(), new Cpf(variaveis.get("ADMIN_CPF")),
                     new Email(variaveis.get("ADMIN_EMAIL")), new Telefone(variaveis.get("ADMIN_TELEFONE")),
-                    variaveis.get("ADMIN_ENDERECO").strip());
+                    Endereco.de(variaveis.get("ADMIN_ENDERECO_RUA"), variaveis.get("ADMIN_ENDERECO_NUMERO"), complemento,
+                            variaveis.get("ADMIN_ENDERECO_BAIRRO"), variaveis.get("ADMIN_ENDERECO_CIDADE"),
+                            variaveis.get("ADMIN_ENDERECO_ESTADO"), variaveis.get("ADMIN_ENDERECO_CEP")));
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("Invalid initial Admin variables: " + e.getMessage(), e);
         }

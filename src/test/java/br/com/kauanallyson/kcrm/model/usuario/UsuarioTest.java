@@ -3,6 +3,7 @@ package br.com.kauanallyson.kcrm.model.usuario;
 import br.com.kauanallyson.kcrm.exception.MotivoObrigatorioException;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.exception.UltimoAdminException;
 import br.com.kauanallyson.kcrm.exception.UsuarioJaAtivoException;
@@ -17,7 +18,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class UsuarioTest {
     private static final PasswordEncoder ENCODER = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     private static final Usuario.Dados DADOS = new Usuario.Dados(
-            "Alice", new Cpf("52998224725"), new Email("alice@test.com"), new Telefone("88999990000"), "a");
+            "Alice", new Cpf("52998224725"), new Email("alice@test.com"), new Telefone("88999990000"),
+            Endereco.de("Rua A", "1", null, "Centro", "Sobral", "CE", "62010000"));
 
     private static Usuario corretor() {
         return Usuario.cadastrar(DADOS, Perfil.CORRETOR, "segredo123", ENCODER);

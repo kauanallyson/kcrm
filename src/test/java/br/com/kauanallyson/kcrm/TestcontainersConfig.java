@@ -29,7 +29,12 @@ public class TestcontainersConfig {
             registry.add("admin.senha", () -> TestApi.ADMIN_SENHA);
             registry.add("admin.cpf", () -> "529.982.247-25");
             registry.add("admin.telefone", () -> "(88) 99999-0000");
-            registry.add("admin.endereco", () -> "Rua A, 1");
+            registry.add("admin.endereco.rua", () -> "Rua A");
+            registry.add("admin.endereco.numero", () -> "1");
+            registry.add("admin.endereco.bairro", () -> "Centro");
+            registry.add("admin.endereco.cidade", () -> "Sobral");
+            registry.add("admin.endereco.estado", () -> "CE");
+            registry.add("admin.endereco.cep", () -> "62010-000");
         };
     }
 }

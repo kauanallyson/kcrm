@@ -65,6 +65,9 @@ public final class TestApi {
     }
 
     // Gera um CPF com dígitos verificadores válidos para passar na validação @CPF
+    public static final String ENDERECO_PADRAO =
+            "{\"rua\":\"Rua A\",\"numero\":\"1\",\"bairro\":\"Centro\",\"cidade\":\"Sobral\",\"estado\":\"CE\",\"cep\":\"62010000\"}";
+
     public static String randomCpf() {
         int[] d = new int[11];
         for (int i = 0; i < 9; i++) {
@@ -87,13 +90,13 @@ public final class TestApi {
 
     public static String usuarioJson(String email, String cpf) {
         return """
-                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"88999990000","endereco":"a"}
+                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"88999990000","endereco":{"rua":"Rua A","numero":"1","bairro":"Centro","cidade":"Sobral","estado":"CE","cep":"62010000"}}
                 """.formatted(cpf, email, SENHA);
     }
 
     public static String cadastroJson(String email, String cpf, String perfil) {
         return """
-                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"88999990000","endereco":"a","perfil":"%s"}
+                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"88999990000","endereco":{"rua":"Rua A","numero":"1","bairro":"Centro","cidade":"Sobral","estado":"CE","cep":"62010000"},"perfil":"%s"}
                 """.formatted(cpf, email, SENHA, perfil);
     }
 

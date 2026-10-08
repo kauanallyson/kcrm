@@ -34,6 +34,19 @@ final class ValueConverters {
     }
 
     @Converter(autoApply = true)
+    static class CepConverter implements AttributeConverter<Cep, String> {
+        @Override
+        public String convertToDatabaseColumn(Cep cep) {
+            return cep == null ? null : cep.value();
+        }
+
+        @Override
+        public Cep convertToEntityAttribute(String value) {
+            return value == null ? null : new Cep(value);
+        }
+    }
+
+    @Converter(autoApply = true)
     static class TelefoneConverter implements AttributeConverter<Telefone, String> {
         @Override
         public String convertToDatabaseColumn(Telefone telefone) {

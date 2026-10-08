@@ -140,6 +140,61 @@ class UsuarioIntegrationTest {
     }
 
     @Test
+    void enderecoEhUmObjetoAninhadoQueIdaEVolta() throws Exception {
+        String endereco = """
+                {"rua":" Rua das Flores ","numero":"S/N","complemento":" Casa 2 ","bairro":"Centro",
+                "cidade":"Sobral","estado":"ce","cep":"62.010000"}""";
+        String body = cadastroJson(randomEmail(), randomCpf(), "CORRETOR").replace(ENDERECO_PADRAO, endereco);
+
+        String location = mockMvc.perform(comToken(json(post("/api/usuarios"), body), admin))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
+
+        mockMvc.perform(comToken(get(location), admin))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.endereco.rua").value("Rua das Flores"))
+                .andExpect(jsonPath("$.endereco.numero").value("S/N"))
+                .andExpect(jsonPath("$.endereco.complemento").value("Casa 2"))
+                .andExpect(jsonPath("$.endereco.bairro").value("Centro"))
+                .andExpect(jsonPath("$.endereco.cidade").value("Sobral"))
+                .andExpect(jsonPath("$.endereco.estado").value("CE"))
+                .andExpect(jsonPath("$.endereco.cep").value("62010-000"));
+    }
+
+    @Test
+    void enderecoSemComplementoDevolveComplementoNulo() throws Exception {
+        UUID id = api.cadastrar(randomEmail(), "CORRETOR");
+
+        mockMvc.perform(comToken(get("/api/usuarios/" + id), admin))
+                .andExpect(jsonPath("$.endereco.complemento").doesNotExist())
+                .andExpect(jsonPath("$.endereco.cep").value("62010-000"));
+    }
+
+    @Test
+    void enderecoInvalidoRetornaErroPorCampo() throws Exception {
+        String endereco = """
+                {"rua":" ","numero":"1","bairro":"Centro","cidade":"Sobral","estado":"XX","cep":"123"}""";
+        String body = cadastroJson(randomEmail(), randomCpf(), "CORRETOR").replace(ENDERECO_PADRAO, endereco);
+
+        mockMvc.perform(comToken(json(post("/api/usuarios"), body), admin))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDACAO_FALHOU"))
+                .andExpect(jsonPath("$.errors['endereco.rua']").exists())
+                .andExpect(jsonPath("$.errors['endereco.estado']").exists())
+                .andExpect(jsonPath("$.errors['endereco.cep']").exists())
+                .andExpect(jsonPath("$.errors['endereco.numero']").doesNotExist());
+    }
+
+    @Test
+    void cadastroSemEnderecoEhRejeitado() throws Exception {
+        String body = cadastroJson(randomEmail(), randomCpf(), "CORRETOR").replace("\"endereco\":" + ENDERECO_PADRAO + ",", "");
+
+        mockMvc.perform(comToken(json(post("/api/usuarios"), body), admin))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.endereco").exists());
+    }
+
+    @Test
     void adminListaVeEEditaQualquerUsuario() throws Exception {
         String email = randomEmail();
         UUID id = api.cadastrar(email, "CORRETOR");

@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.dto.usuario;
 
+import br.com.kauanallyson.kcrm.dto.common.EnderecoResponse;
 import br.com.kauanallyson.kcrm.model.usuario.Perfil;
 import br.com.kauanallyson.kcrm.model.usuario.Usuario;
 
@@ -11,13 +12,13 @@ public record UsuarioResponse(
         String cpf,
         String email,
         String telefone,
-        String endereco,
+        EnderecoResponse endereco,
         Perfil perfil,
         boolean ativo
 ) {
     public static UsuarioResponse from(Usuario usuario) {
         return new UsuarioResponse(usuario.getId(), usuario.getNome(), usuario.getCpf().value(),
-                usuario.getEmail().value(), usuario.getTelefone().value(), usuario.getEndereco(), usuario.getPerfil(),
+                usuario.getEmail().value(), usuario.getTelefone().value(), EnderecoResponse.from(usuario.getEndereco()), usuario.getPerfil(),
                 usuario.isAtivo());
     }
 }
