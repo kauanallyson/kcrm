@@ -143,7 +143,7 @@ class UsuarioIntegrationTest {
     void enderecoEhUmObjetoAninhadoQueIdaEVolta() throws Exception {
         String endereco = """
                 {"rua":" Rua das Flores ","numero":"S/N","complemento":" Casa 2 ","bairro":"Centro",
-                "cidade":"Sobral","estado":"ce","cep":"62.010000"}""";
+                "cidade":"Sobral","estado":"ce","cep":"62010-000"}""";
         String body = cadastroJson(randomEmail(), randomCpf(), "CORRETOR").replace(ENDERECO_PADRAO, endereco);
 
         String location = mockMvc.perform(comToken(json(post("/api/usuarios"), body), admin))
@@ -192,6 +192,31 @@ class UsuarioIntegrationTest {
         mockMvc.perform(comToken(json(post("/api/usuarios"), body), admin))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.endereco").exists());
+    }
+
+    @Test
+    void valoresInvalidosVoltamTodosComoErroPorCampoEmPortugues() throws Exception {
+        String body = cadastroJson("alice@semponto", "529.abc.247-25", "CORRETOR")
+                .replace("\"88999990000\"", "\"(20) 99999-0000\"");
+
+        mockMvc.perform(comToken(json(post("/api/usuarios"), body), admin))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDACAO_FALHOU"))
+                .andExpect(jsonPath("$.errors.email").value("E-mail inválido: informe no formato nome@dominio.com"))
+                .andExpect(jsonPath("$.errors.cpf").value("CPF inválido: informe 11 dígitos, no formato 000.000.000-00"))
+                .andExpect(jsonPath("$.errors.telefone").value("Telefone inválido: DDD 20 não existe"));
+    }
+
+    @Test
+    void edicaoComValorInvalidoEhErroPorCampo() throws Exception {
+        String email = randomEmail();
+        UUID id = api.cadastrar(email, "CORRETOR");
+        String body = usuarioJson(email, randomCpf()).replace(ENDERECO_PADRAO,
+                ENDERECO_PADRAO.replace("\"cep\":\"62010000\"", "\"cep\":\"00000000\""));
+
+        mockMvc.perform(comToken(json(put("/api/usuarios/" + id), body), admin))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors['endereco.cep']").value("CEP inválido: informe 8 dígitos, no formato 00000-000"));
     }
 
     @Test

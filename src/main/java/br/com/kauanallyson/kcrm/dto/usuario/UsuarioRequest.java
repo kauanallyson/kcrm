@@ -1,37 +1,36 @@
 package br.com.kauanallyson.kcrm.dto.usuario;
 
 import br.com.kauanallyson.kcrm.dto.common.EnderecoRequest;
+import br.com.kauanallyson.kcrm.dto.common.FieldErrors;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
+import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.usuario.Usuario;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import org.hibernate.validator.constraints.br.CPF;
 
 public record UsuarioRequest(
-        @NotBlank
+        @NotBlank(message = "O nome não pode ficar em branco")
         String nome,
-        @NotBlank
-        @CPF
         String cpf,
-        @NotBlank
-        @Email
         String email,
-        @NotBlank
-        @Size(min = 8, message = "deve ter pelo menos 8 caracteres")
+        @NotBlank(message = "A senha não pode ficar em branco")
+        @Size(min = 8, max = 72, message = "A senha deve ter entre 8 e 72 caracteres")
         String senha,
-        @NotBlank
-        @Pattern(regexp = "^[^0-9]*([0-9][^0-9]*){11}$", message = "deve ter DDD e celular com 9 dígitos: (xx) xxxxx-xxxx")
         String telefone,
-        @NotNull
-        @Valid
+        @NotNull(message = "O endereço não pode ficar em branco")
         EnderecoRequest endereco
 ) {
+    // Formatos são validados pelos próprios tipos de valor, com as mesmas mensagens em toda parte
     public Usuario.Dados toDados() {
-        return new Usuario.Dados(nome, new Cpf(cpf), new br.com.kauanallyson.kcrm.model.common.Email(email), new Telefone(telefone), endereco.toEndereco());
+        FieldErrors errors = new FieldErrors();
+        Cpf cpfValido = errors.collect(() -> new Cpf(cpf));
+        Email emailValido = errors.collect(() -> new Email(email));
+        Telefone telefoneValido = errors.collect(() -> new Telefone(telefone));
+        Endereco enderecoValido = endereco.toEndereco(errors);
+        errors.throwIfAny();
+        return new Usuario.Dados(nome.strip(), cpfValido, emailValido, telefoneValido, enderecoValido);
     }
 }

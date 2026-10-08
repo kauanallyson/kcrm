@@ -1,22 +1,19 @@
 package br.com.kauanallyson.kcrm.model.common;
 
-import java.util.Objects;
+import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
 
+// A forma canônica, no banco e na API, é 000.000.000-00
 public record Cpf(String value) {
     private static final int LENGTH = 11;
+    private static final String MENSAGEM = "CPF inválido: informe 11 dígitos, no formato 000.000.000-00";
 
     public Cpf {
-        Objects.requireNonNull(value, "cpf");
-        value = value.replaceAll("\\D", "");
-        if (!isValid(value)) {
-            throw new IllegalArgumentException("CPF inválido");
+        String texto = Strings.requireText(value, "cpf", "O CPF não pode ficar em branco");
+        String digits = Strings.requireDigits(texto, ".-", "cpf", MENSAGEM);
+        if (!isValid(digits)) {
+            throw new ValorInvalidoException("cpf", MENSAGEM);
         }
-        value = format(value);
-    }
-
-    // Forma canônica guardada no banco e exposta na API: 000.000.000-00
-    private static String format(String digits) {
-        return digits.substring(0, 3) + "." + digits.substring(3, 6) + "." + digits.substring(6, 9)
+        value = digits.substring(0, 3) + "." + digits.substring(3, 6) + "." + digits.substring(6, 9)
                 + "-" + digits.substring(9);
     }
 

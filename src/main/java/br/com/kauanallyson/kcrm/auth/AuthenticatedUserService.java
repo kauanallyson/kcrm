@@ -24,7 +24,13 @@ public class AuthenticatedUserService implements UserDetailsService {
     @Override
     @NonNull
     public UserDetails loadUserByUsername(@NonNull String email) throws UsernameNotFoundException {
-        return usuarioRepository.findByEmail(new Email(email))
+        Email valido;
+        try {
+            valido = new Email(email);
+        } catch (IllegalArgumentException e) {
+            throw new UsernameNotFoundException("Usuário não encontrado");
+        }
+        return usuarioRepository.findByEmail(valido)
                 .map(AuthenticatedUser::from)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }

@@ -37,7 +37,22 @@ class CpfTest {
     }
 
     @Test
-    void emailEhNormalizado() {
-        assertThat(new Email("  Alice@Test.COM ")).isEqualTo(new Email("alice@test.com"));
+    void cpfNuloOuEmBrancoEhRejeitado() {
+        assertThatThrownBy(() -> new Cpf(null)).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("O CPF não pode ficar em branco");
+        assertThatThrownBy(() -> new Cpf("  ")).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void cpfComLetrasOuOutrosCaracteresEhRejeitado() {
+        assertThatThrownBy(() -> new Cpf("529.abc.247-25")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Cpf("52998224725x")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Cpf("529 982 247 25")).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void cpfComQuantidadeErradaDeDigitosEhRejeitado() {
+        assertThatThrownBy(() -> new Cpf("5299822472")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Cpf("529982247250")).isInstanceOf(IllegalArgumentException.class);
     }
 }

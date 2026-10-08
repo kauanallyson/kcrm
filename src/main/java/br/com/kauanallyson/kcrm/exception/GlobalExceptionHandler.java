@@ -29,6 +29,17 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
         return Problems.of(ex.getCode(), ex.getMessage());
     }
 
+    @ExceptionHandler(ValoresInvalidosException.class)
+    public ProblemDetail handleValoresInvalidos(ValoresInvalidosException ex) {
+        return validacaoFalhou(ex.getErrors());
+    }
+
+    // Um tipo de valor construído fora de FieldErrors ainda vira 400 por campo, nunca 500
+    @ExceptionHandler(ValorInvalidoException.class)
+    public ProblemDetail handleValorInvalido(ValorInvalidoException ex) {
+        return validacaoFalhou(Map.of(ex.getCampo(), ex.getMessage()));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
         return Problems.accessDenied();
@@ -63,8 +74,12 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
                         e -> String.valueOf(e.getDefaultMessage()),
                         (first, second) -> first));
 
+        return ResponseEntity.badRequest().headers(headers).body(validacaoFalhou(errors));
+    }
+
+    private static ProblemDetail validacaoFalhou(Map<String, String> errors) {
         ProblemDetail problem = Problems.of(ErrorCode.VALIDACAO_FALHOU, "Falha na validação");
         problem.setProperty("errors", errors);
-        return ResponseEntity.badRequest().headers(headers).body(problem);
+        return problem;
     }
 }

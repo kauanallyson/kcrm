@@ -1,28 +1,23 @@
 package br.com.kauanallyson.kcrm.dto.common;
 
+import br.com.kauanallyson.kcrm.model.common.Cep;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import br.com.kauanallyson.kcrm.model.common.Uf;
 
+// As regras de formato ficam nos tipos de valor; aqui só se coletam os erros por campo
 public record EnderecoRequest(
-        @NotBlank
         String rua,
-        @NotBlank
         String numero,
         String complemento,
-        @NotBlank
         String bairro,
-        @NotBlank
         String cidade,
-        @NotBlank
-        @Pattern(regexp = "(?i)^\\s*(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\\s*$",
-                message = "deve ser a sigla de uma UF, como CE ou SP")
         String estado,
-        @NotBlank
-        @Pattern(regexp = "^[^0-9]*([0-9][^0-9]*){8}$", message = "deve ter 8 dígitos: 00000-000")
         String cep
 ) {
-    public Endereco toEndereco() {
-        return Endereco.de(rua, numero, complemento, bairro, cidade, estado, cep);
+    public Endereco toEndereco(FieldErrors errors) {
+        Uf uf = errors.collect(() -> Uf.daSigla(estado));
+        Cep cepValido = errors.collect(() -> new Cep(cep));
+        // Com estado ou CEP inválidos, o construtor ainda aponta os erros dos demais campos
+        return errors.collect(() -> new Endereco(rua, numero, complemento, bairro, cidade, uf, cepValido));
     }
 }
