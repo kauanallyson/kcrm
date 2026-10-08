@@ -1,9 +1,9 @@
 package br.com.kauanallyson.kcrm.controller;
 
 import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
+import br.com.kauanallyson.kcrm.dto.historico.EventoResponse;
 import br.com.kauanallyson.kcrm.dto.usuario.CadastroUsuarioRequest;
 import br.com.kauanallyson.kcrm.dto.usuario.DesativacaoRequest;
-import br.com.kauanallyson.kcrm.dto.usuario.HistoricoAcessoResponse;
 import br.com.kauanallyson.kcrm.dto.usuario.PerfilRequest;
 import br.com.kauanallyson.kcrm.dto.usuario.ReativacaoRequest;
 import br.com.kauanallyson.kcrm.dto.usuario.UsuarioRequest;
@@ -57,8 +57,10 @@ public class UsuarioController {
 
     @PatchMapping("/{id}/perfil")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UsuarioResponse> mudarPerfil(@PathVariable UUID id, @RequestBody @Valid PerfilRequest request) {
-        return ResponseEntity.ok(UsuarioResponse.from(usuarioService.mudarPerfil(id, request.perfil())));
+    public ResponseEntity<UsuarioResponse> mudarPerfil(@PathVariable UUID id,
+                                                       @RequestBody @Valid PerfilRequest request,
+                                                       @AuthenticationPrincipal AuthenticatedUser admin) {
+        return ResponseEntity.ok(UsuarioResponse.from(usuarioService.mudarPerfil(id, request.perfil(), admin.id())));
     }
 
     @PostMapping("/{id}/desativacao")
@@ -80,7 +82,7 @@ public class UsuarioController {
 
     @GetMapping("/{id}/historico")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<HistoricoAcessoResponse>> historico(@PathVariable UUID id) {
-        return ResponseEntity.ok(usuarioService.historico(id).stream().map(HistoricoAcessoResponse::from).toList());
+    public ResponseEntity<List<EventoResponse>> historico(@PathVariable UUID id) {
+        return ResponseEntity.ok(usuarioService.historico(id).stream().map(EventoResponse::from).toList());
     }
 }

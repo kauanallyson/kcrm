@@ -92,32 +92,34 @@ public class Usuario {
         return ativo && perfil == Perfil.ADMIN;
     }
 
-    // adminsAtivos é a contagem atual de Admins ativos, incluindo este Usuário se ele for um
-    public void mudarPerfil(Perfil novo, long adminsAtivos) {
+    // adminsAtivos é a contagem atual de Admins ativos, incluindo este Usuário se ele for um.
+    // Retorna se o Perfil de fato mudou, para que só uma mudança real entre no Histórico
+    public boolean mudarPerfil(Perfil novo, long adminsAtivos) {
         Objects.requireNonNull(novo, "perfil");
+        if (novo == perfil) {
+            return false;
+        }
         if (novo != Perfil.ADMIN) {
             exigirQueNaoSejaOUltimoAdmin(adminsAtivos);
         }
         this.perfil = novo;
+        return true;
     }
 
-    public HistoricoAcesso desativar(String motivo, Usuario admin, long adminsAtivos) {
+    public void desativar(String motivo, long adminsAtivos) {
         exigirMotivo(motivo);
         if (!ativo) {
             throw new UsuarioJaDesativadoException(id);
         }
         exigirQueNaoSejaOUltimoAdmin(adminsAtivos);
         this.ativo = false;
-        return HistoricoAcesso.registrar(this, TipoMovimentacao.DESATIVACAO, motivo.strip(), admin);
     }
 
-    public HistoricoAcesso reativar(String motivo, Usuario admin) {
+    public void reativar() {
         if (ativo) {
             throw new UsuarioJaAtivoException(id);
         }
         this.ativo = true;
-        String motivoLimpo = motivo == null || motivo.isBlank() ? null : motivo.strip();
-        return HistoricoAcesso.registrar(this, TipoMovimentacao.REATIVACAO, motivoLimpo, admin);
     }
 
     private void exigirQueNaoSejaOUltimoAdmin(long adminsAtivos) {

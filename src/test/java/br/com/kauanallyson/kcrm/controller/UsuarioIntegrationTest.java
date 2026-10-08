@@ -235,25 +235,67 @@ class UsuarioIntegrationTest {
     }
 
     @Test
-    void historicoRegistraDesativacoesEReativacoes() throws Exception {
+    void historicoMostraEventosDoUsuarioDoMaisRecenteAoMaisAntigo() throws Exception {
         UUID id = api.cadastrar(randomEmail(), "CORRETOR");
-        UUID adminId = usuarioRepository.findByEmail(new Email(ADMIN_EMAIL)).orElseThrow().getId();
+        UUID outro = api.cadastrar(randomEmail(), "CORRETOR");
+        Usuario adminInicial = usuarioRepository.findByEmail(new Email(ADMIN_EMAIL)).orElseThrow();
 
-        desativar(id, "Primeira saída").andExpect(status().isOk());
+        desativar(id, "  Primeira saída ").andExpect(status().isOk());
         mockMvc.perform(comToken(post("/api/usuarios/" + id + "/reativacao"), admin)).andExpect(status().isOk());
+        mudarPerfil(id, "ADMIN").andExpect(status().isOk());
         desativar(id, "Segunda saída").andExpect(status().isOk());
+        desativar(outro, "Evento de outro Usuário").andExpect(status().isOk());
 
         mockMvc.perform(comToken(get("/api/usuarios/" + id + "/historico"), admin))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$.length()").value(4))
                 .andExpect(jsonPath("$[0].tipo").value("DESATIVACAO"))
-                .andExpect(jsonPath("$[0].motivo").value("Primeira saída"))
-                .andExpect(jsonPath("$[0].adminId").value(adminId.toString()))
+                .andExpect(jsonPath("$[0].motivo").value("Segunda saída"))
+                .andExpect(jsonPath("$[0].detalhe").doesNotExist())
+                .andExpect(jsonPath("$[0].autorId").value(adminInicial.getId().toString()))
+                .andExpect(jsonPath("$[0].autorNome").value(adminInicial.getNome()))
                 .andExpect(jsonPath("$[0].ocorridoEm").isNotEmpty())
-                .andExpect(jsonPath("$[1].tipo").value("REATIVACAO"))
+                .andExpect(jsonPath("$[1].tipo").value("MUDANCA_DE_PERFIL"))
                 .andExpect(jsonPath("$[1].motivo").doesNotExist())
-                .andExpect(jsonPath("$[2].tipo").value("DESATIVACAO"))
-                .andExpect(jsonPath("$[2].motivo").value("Segunda saída"));
+                .andExpect(jsonPath("$[1].detalhe").value("CORRETOR -> ADMIN"))
+                .andExpect(jsonPath("$[2].tipo").value("REATIVACAO"))
+                .andExpect(jsonPath("$[2].motivo").doesNotExist())
+                .andExpect(jsonPath("$[3].tipo").value("DESATIVACAO"))
+                .andExpect(jsonPath("$[3].motivo").value("Primeira saída"));
+    }
+
+    @Test
+    void reativacaoComMotivoRegistraOMotivo() throws Exception {
+        UUID id = api.cadastrar(randomEmail(), "CORRETOR");
+        desativar(id, "Férias").andExpect(status().isOk());
+        mockMvc.perform(comToken(json(post("/api/usuarios/" + id + "/reativacao"), "{\"motivo\":\"Voltou\"}"), admin))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(comToken(get("/api/usuarios/" + id + "/historico"), admin))
+                .andExpect(jsonPath("$[0].tipo").value("REATIVACAO"))
+                .andExpect(jsonPath("$[0].motivo").value("Voltou"));
+    }
+
+    @Test
+    void mudarParaOMesmoPerfilNaoRegistraEvento() throws Exception {
+        UUID id = api.cadastrar(randomEmail(), "CORRETOR");
+
+        mudarPerfil(id, "CORRETOR").andExpect(status().isOk());
+
+        mockMvc.perform(comToken(get("/api/usuarios/" + id + "/historico"), admin))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void historicoDeUsuarioInexistenteEhNaoEncontrado() throws Exception {
+        mockMvc.perform(comToken(get("/api/usuarios/" + UUID.randomUUID() + "/historico"), admin))
+                .andExpect(status().isNotFound());
+    }
+
+    private ResultActions mudarPerfil(UUID id, String perfil) throws Exception {
+        return mockMvc.perform(comToken(json(patch("/api/usuarios/" + id + "/perfil"),
+                "{\"perfil\":\"" + perfil + "\"}"), admin));
     }
 
     @Test
