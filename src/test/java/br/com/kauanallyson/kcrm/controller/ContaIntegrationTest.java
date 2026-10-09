@@ -174,4 +174,18 @@ class ContaIntegrationTest {
             assertThat(output.getAll()).doesNotContain(cpf).doesNotContain(formatado);
         }
     }
+
+    @Test
+    void exportacaoEEncerramentoEntramNaAuditoria(CapturedOutput output) throws Exception {
+        String email = randomEmail();
+        UUID corretorId = api.cadastrar(email);
+        String token = api.login(email, SENHA);
+
+        mockMvc.perform(comToken(get("/api/conta/exportacao"), token)).andExpect(status().isOk());
+        mockMvc.perform(comToken(json(post("/api/conta/encerramento"), senhaJson(SENHA)), token))
+                .andExpect(status().isNoContent());
+
+        assertThat(output).contains("acao=carteira.exportada corretor=" + corretorId);
+        assertThat(output).contains("acao=conta.encerrada corretor=" + corretorId);
+    }
 }

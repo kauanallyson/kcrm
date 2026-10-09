@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
+import br.com.kauanallyson.kcrm.auditoria.Auditoria;
 import br.com.kauanallyson.kcrm.dto.conta.ExportacaoDaCarteiraResponse;
 import br.com.kauanallyson.kcrm.exception.CorretorNaoEncontradoException;
 import br.com.kauanallyson.kcrm.exception.SenhaIncorretaException;
@@ -22,6 +23,7 @@ public class ContaService {
     private final ConfirmacaoDeEmailRepository confirmacaoRepository;
     private final Carteira carteira;
     private final PasswordEncoder passwordEncoder;
+    private final Auditoria auditoria;
 
     public ContaService(
             CorretorRepository corretorRepository,
@@ -29,7 +31,8 @@ public class ContaService {
             ImovelRepository imovelRepository,
             ConfirmacaoDeEmailRepository confirmacaoRepository,
             Carteira carteira,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            Auditoria auditoria
     ) {
         this.corretorRepository = corretorRepository;
         this.clienteRepository = clienteRepository;
@@ -37,11 +40,13 @@ public class ContaService {
         this.confirmacaoRepository = confirmacaoRepository;
         this.carteira = carteira;
         this.passwordEncoder = passwordEncoder;
+        this.auditoria = auditoria;
     }
 
     // Cópia completa da Carteira, só a do próprio Corretor
     @Transactional(readOnly = true)
     public ExportacaoDaCarteiraResponse exportar(CorretorId corretorId) {
+        auditoria.registrar("carteira.exportada", corretorId.value(), corretorId.value());
         return ExportacaoDaCarteiraResponse.of(corretor(corretorId), carteira.todosOsClientes(corretorId),
                 carteira.todosOsImoveis(corretorId));
     }
@@ -57,6 +62,7 @@ public class ContaService {
         imovelRepository.apagarTodosDoCorretor(corretorId.value());
         confirmacaoRepository.deleteById(corretorId.value());
         corretorRepository.delete(corretor);
+        auditoria.registrar("conta.encerrada", corretorId.value(), corretorId.value());
     }
 
     private Corretor corretor(CorretorId id) {
