@@ -1,0 +1,63 @@
+// Coleta os logs de todos os containers do compose e envia ao Loki
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// Rótulo "service" = nome do serviço no compose
+discovery.relabel "containers" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "compose_project"
+  }
+}
+
+loki.source.docker "containers" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  relabel_rules = discovery.relabel.containers.rules
+  forward_to    = [loki.process.app.receiver]
+}
+
+// Logs da app em JSON (ECS, profile prod): nível vira rótulo e request id vira metadado.
+// Só o logger de auditoria vira rótulo, para ter seletor e retenção próprios sem explodir a cardinalidade
+loki.process "app" {
+  stage.match {
+    selector = "{service=\"kcrm\"}"
+
+    stage.json {
+      expressions = {
+        level      = "log.level",
+        logger     = "log.logger",
+        request_id = "requestId",
+      }
+    }
+    stage.labels {
+      values = { level = "", logger = "" }
+    }
+    stage.structured_metadata {
+      values = { request_id = "" }
+    }
+  }
+
+  stage.match {
+    selector = "{logger!=\"kcrm.auditoria\"}"
+    stage.label_drop {
+      values = ["logger"]
+    }
+  }
+
+  forward_to = [loki.write.loki.receiver]
+}
+
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

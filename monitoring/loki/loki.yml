@@ -1,0 +1,41 @@
+# Loki em modo monolítico, dados no volume local
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  log_level: warn
+
+common:
+  path_prefix: /loki
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+
+schema_config:
+  configs:
+    - from: 2026-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+# O compactor é quem apaga o que passou da retenção
+compactor:
+  working_directory: /loki/compactor
+  retention_enabled: true
+  delete_request_store: filesystem
+
+limits_config:
+  # 30 dias para tudo; a trilha de auditoria fica 1 ano
+  retention_period: 720h
+  retention_stream:
+    - selector: '{logger="kcrm.auditoria"}'
+      priority: 1
+      period: 8760h
