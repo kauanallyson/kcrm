@@ -11,20 +11,21 @@
     <groupId>br.com.kauanallyson</groupId>
     <artifactId>kcrm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name/>
-    <description/>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
+    <name>kcrm</name>
+    <description>CRM pessoal do Corretor de imóveis: Clientes e Imóveis de cada Corretor</description>
+    <url>https://github.com/kauanallyson/kcrm</url>
     <developers>
-        <developer/>
+        <developer>
+            <id>kauanallyson</id>
+            <name>Kauan Allyson</name>
+            <url>https://github.com/kauanallyson</url>
+        </developer>
     </developers>
     <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
+        <connection>scm:git:https://github.com/kauanallyson/kcrm.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/kauanallyson/kcrm.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/kauanallyson/kcrm</url>
     </scm>
     <properties>
         <java.version>21</java.version>
@@ -33,7 +34,7 @@
         <tomcat.version>11.0.25</tomcat.version>
         <jackson-bom.version>3.1.7</jackson-bom.version>
         <jackson-2-bom.version>2.21.7</jackson-2-bom.version>
-        <jjwt.version>0.12.6</jjwt.version>
+        <jjwt.version>0.13.0</jjwt.version>
         <springdoc.version>3.1.1</springdoc.version>
     </properties>
     <dependencies>

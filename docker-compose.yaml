@@ -48,6 +48,10 @@ services:
       RATE_LIMIT_AUTH: ${RATE_LIMIT_AUTH:-10}
       RATE_LIMIT_API: ${RATE_LIMIT_API:-100}
       MANAGEMENT_PORT: 8081
+      DB_POOL_MAX: ${DB_POOL_MAX:-10}
+      SHUTDOWN_TIMEOUT: ${SHUTDOWN_TIMEOUT:-20s}
+    # Maior que o SHUTDOWN_TIMEOUT, para o Docker não matar a app no meio do graceful shutdown
+    stop_grace_period: 30s
     # Sem portas no host: o tráfego público entra pelo Traefik e o management fica só na rede interna
     mem_limit: 768m
     depends_on:
@@ -105,7 +109,31 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
+      - loki
+
+  # Logs de todos os containers; sem porta no host, consultado só pelo Grafana
+  loki:
+    image: grafana/loki:3.5.3
+    container_name: kcrm-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./monitoring/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+
+  # Coletor: lê os containers pelo socket do Docker (somente leitura) e envia ao Loki
+  alloy:
+    image: grafana/alloy:v1.10.2
+    container_name: kcrm-alloy
+    restart: unless-stopped
+    command: run /etc/alloy/config.alloy --storage.path=/var/lib/alloy/data
+    volumes:
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
 
 volumes:
   postgres-data:
   grafana-data:
+  loki-data:
