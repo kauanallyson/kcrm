@@ -26,21 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.authenticatedUserService = authenticatedUserService;
     }
 
-    @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
-        // Unresolvable token: continue unauthenticated, the entry point answers 401
-        bearerToken(request)
-                .flatMap(jwtService::parseSubject)
-                .flatMap(authenticatedUserService::loadById)
-                .ifPresent(principal -> authenticate(principal, request));
-
-        filterChain.doFilter(request, response);
-    }
-
     private static Optional<String> bearerToken(HttpServletRequest request) {
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             return Optional.empty();
@@ -58,5 +43,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
+    }
+
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
+        // Unresolvable token: continue unauthenticated, the entry point answers 401
+        bearerToken(request)
+                .flatMap(jwtService::parseSubject)
+                .flatMap(authenticatedUserService::loadById)
+                .ifPresent(principal -> authenticate(principal, request));
+
+        filterChain.doFilter(request, response);
     }
 }

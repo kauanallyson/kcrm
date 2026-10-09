@@ -1,7 +1,7 @@
 package br.com.kauanallyson.kcrm.service;
 
-import br.com.kauanallyson.kcrm.auth.JwtService;
 import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
+import br.com.kauanallyson.kcrm.auth.JwtService;
 import br.com.kauanallyson.kcrm.dto.auth.LoginRequest;
 import br.com.kauanallyson.kcrm.dto.auth.TokenResponse;
 import br.com.kauanallyson.kcrm.exception.CredenciaisInvalidasException;

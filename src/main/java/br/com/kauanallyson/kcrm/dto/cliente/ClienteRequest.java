@@ -19,6 +19,15 @@ public record ClienteRequest(
         String email,
         EnderecoRequest endereco
 ) {
+    // O WhatsApp é um Telefone, mas o erro precisa voltar no campo do JSON do Cliente
+    private static Telefone whatsapp(String valor) {
+        try {
+            return new Telefone(valor);
+        } catch (ValorInvalidoException e) {
+            throw new ValorInvalidoException("whatsapp", e.getMessage());
+        }
+    }
+
     // Obrigatórios e formatos voltam todos juntos; cpf, email e endereco são opcionais
     public Cliente.Dados toDados() {
         FieldErrors errors = new FieldErrors();
@@ -30,14 +39,5 @@ public record ClienteRequest(
         Endereco enderecoValido = endereco == null ? null : endereco.toEndereco(errors);
         errors.throwIfAny();
         return new Cliente.Dados(nome, whatsappValido, origem, indicadoPor, cpfValido, emailValido, enderecoValido);
-    }
-
-    // O WhatsApp é um Telefone, mas o erro precisa voltar no campo do JSON do Cliente
-    private static Telefone whatsapp(String valor) {
-        try {
-            return new Telefone(valor);
-        } catch (ValorInvalidoException e) {
-            throw new ValorInvalidoException("whatsapp", e.getMessage());
-        }
     }
 }

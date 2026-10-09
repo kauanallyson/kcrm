@@ -7,7 +7,10 @@ import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -79,25 +82,6 @@ public class Cliente {
         return cliente;
     }
 
-    public void atualizarDados(Dados dados) {
-        if (dados.nome() == null || dados.nome().isBlank()) {
-            throw new ValorInvalidoException("nome", "O nome não pode ficar em branco");
-        }
-        if (dados.whatsapp() == null) {
-            throw new ValorInvalidoException("whatsapp", "O WhatsApp não pode ficar em branco");
-        }
-        if (dados.origem() == null) {
-            throw new ValorInvalidoException("origem", "A origem não pode ficar em branco");
-        }
-        this.nome = dados.nome().strip();
-        this.whatsapp = dados.whatsapp();
-        this.origem = dados.origem();
-        this.indicadoPor = indicadoPorDa(dados.origem(), dados.indicadoPor());
-        this.cpf = dados.cpf();
-        this.email = dados.email();
-        this.endereco = dados.endereco();
-    }
-
     // Obrigatório só na Indicação; normalizado como nome próprio: "joão DA silva" vira "João da Silva"
     private static String indicadoPorDa(Origem origem, String indicadoPor) {
         boolean informado = indicadoPor != null && !indicadoPor.isBlank();
@@ -124,6 +108,25 @@ public class Cliente {
             }
         }
         return String.join(" ", normalizadas);
+    }
+
+    public void atualizarDados(Dados dados) {
+        if (dados.nome() == null || dados.nome().isBlank()) {
+            throw new ValorInvalidoException("nome", "O nome não pode ficar em branco");
+        }
+        if (dados.whatsapp() == null) {
+            throw new ValorInvalidoException("whatsapp", "O WhatsApp não pode ficar em branco");
+        }
+        if (dados.origem() == null) {
+            throw new ValorInvalidoException("origem", "A origem não pode ficar em branco");
+        }
+        this.nome = dados.nome().strip();
+        this.whatsapp = dados.whatsapp();
+        this.origem = dados.origem();
+        this.indicadoPor = indicadoPorDa(dados.origem(), dados.indicadoPor());
+        this.cpf = dados.cpf();
+        this.email = dados.email();
+        this.endereco = dados.endereco();
     }
 
     public record Dados(
