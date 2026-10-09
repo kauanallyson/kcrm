@@ -11,24 +11,23 @@ import java.util.List;
 import java.util.UUID;
 
 // Credenciais usadas só no login; depois dele, o domínio recebe apenas o CorretorId ou o AdministradorId.
-// Suspensão e e-mail não confirmado não bloqueiam aqui: o login só os revela depois de conferir a senha
+// A Suspensão não bloqueia aqui: o login só a revela depois de conferir a senha
 public record AuthenticatedUser(
         UUID id,
         String email,
         String senhaHash,
         Papel papel,
-        boolean suspenso,
-        boolean emailConfirmado
+        boolean suspenso
 ) implements UserDetails {
 
     public static AuthenticatedUser from(Corretor corretor) {
         return new AuthenticatedUser(corretor.getId(), corretor.getEmail().value(), corretor.getSenhaHash().value(),
-                Papel.CORRETOR, corretor.isSuspenso(), corretor.isEmailConfirmado());
+                Papel.CORRETOR, corretor.isSuspenso());
     }
 
     public static AuthenticatedUser from(Administrador administrador) {
         return new AuthenticatedUser(administrador.getId(), administrador.getEmail().value(),
-                administrador.getSenhaHash().value(), Papel.ADMINISTRADOR, false, true);
+                administrador.getSenhaHash().value(), Papel.ADMINISTRADOR, false);
     }
 
     @Override

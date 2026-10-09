@@ -1,7 +1,6 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.exception.ContaSuspensaException;
-import br.com.kauanallyson.kcrm.exception.EmailNaoConfirmadoException;
 import br.com.kauanallyson.kcrm.exception.ProblemResponseWriter;
 import br.com.kauanallyson.kcrm.exception.Problems;
 import jakarta.servlet.FilterChain;
@@ -69,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Unresolvable token: continue unauthenticated, the entry point answers 401
                 authenticatedUserService.principal(sujeito.get())
                         .ifPresent(principal -> authenticate(principal, sujeito.get().papel(), request));
-            } catch (ContaSuspensaException | EmailNaoConfirmadoException e) {
+            } catch (ContaSuspensaException e) {
                 problemWriter.write(request, response, Problems.of(e.getCode(), e.getMessage()));
                 return;
             }
