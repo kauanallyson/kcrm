@@ -48,6 +48,10 @@ services:
       RATE_LIMIT_AUTH: ${RATE_LIMIT_AUTH:-10}
       RATE_LIMIT_API: ${RATE_LIMIT_API:-100}
       MANAGEMENT_PORT: 8081
+      DB_POOL_MAX: ${DB_POOL_MAX:-10}
+      SHUTDOWN_TIMEOUT: ${SHUTDOWN_TIMEOUT:-20s}
+    # Maior que o SHUTDOWN_TIMEOUT, para o Docker não matar a app no meio do graceful shutdown
+    stop_grace_period: 30s
     # Sem portas no host: o tráfego público entra pelo Traefik e o management fica só na rede interna
     mem_limit: 768m
     depends_on:
