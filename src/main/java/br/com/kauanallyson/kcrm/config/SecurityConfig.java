@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers(AuthPaths.PUBLIC.toArray(String[]::new)).permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/health/**", "/actuator/prometheus").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(problemHandler)
