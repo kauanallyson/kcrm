@@ -3,7 +3,7 @@ package br.com.kauanallyson.kcrm.controller;
 import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.dto.imovel.ImovelRequest;
 import br.com.kauanallyson.kcrm.dto.imovel.ImovelResponse;
-import br.com.kauanallyson.kcrm.service.ImovelService;
+import br.com.kauanallyson.kcrm.service.Carteira;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,10 +16,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/imoveis")
 public class ImovelController {
-    private final ImovelService imovelService;
+    private final Carteira carteira;
 
-    public ImovelController(ImovelService imovelService) {
-        this.imovelService = imovelService;
+    public ImovelController(Carteira carteira) {
+        this.carteira = carteira;
     }
 
     @PostMapping
@@ -27,13 +27,13 @@ public class ImovelController {
             @RequestBody @Valid ImovelRequest request,
             @AuthenticationPrincipal CorretorId corretor
     ) {
-        ImovelResponse response = ImovelResponse.from(imovelService.cadastrar(request, corretor));
+        ImovelResponse response = ImovelResponse.from(carteira.cadastrarImovel(corretor, request.toDados()));
         return ResponseEntity.created(URI.create("/api/imoveis/" + response.id())).body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<ImovelResponse>> listar(@AuthenticationPrincipal CorretorId corretor) {
-        return ResponseEntity.ok(imovelService.listar(corretor).stream().map(ImovelResponse::from).toList());
+        return ResponseEntity.ok(carteira.imoveis(corretor).stream().map(ImovelResponse::from).toList());
     }
 
     @GetMapping("/{id}")
@@ -41,7 +41,7 @@ public class ImovelController {
             @PathVariable UUID id,
             @AuthenticationPrincipal CorretorId corretor
     ) {
-        return ResponseEntity.ok(ImovelResponse.from(imovelService.buscarPorId(id, corretor)));
+        return ResponseEntity.ok(ImovelResponse.from(carteira.imovel(corretor, id)));
     }
 
     @PutMapping("/{id}")
@@ -50,7 +50,7 @@ public class ImovelController {
             @RequestBody @Valid ImovelRequest request,
             @AuthenticationPrincipal CorretorId corretor
     ) {
-        return ResponseEntity.ok(ImovelResponse.from(imovelService.atualizar(id, request, corretor)));
+        return ResponseEntity.ok(ImovelResponse.from(carteira.atualizarImovel(corretor, id, request.toDados())));
     }
 
     // Vendido é definitivo: não há rota de volta a Disponível
@@ -59,12 +59,12 @@ public class ImovelController {
             @PathVariable UUID id,
             @AuthenticationPrincipal CorretorId corretor
     ) {
-        return ResponseEntity.ok(ImovelResponse.from(imovelService.marcarVendido(id, corretor)));
+        return ResponseEntity.ok(ImovelResponse.from(carteira.marcarVendido(corretor, id)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> apagar(@PathVariable UUID id, @AuthenticationPrincipal CorretorId corretor) {
-        imovelService.apagar(id, corretor);
+        carteira.apagarImovel(corretor, id);
         return ResponseEntity.noContent().build();
     }
 }

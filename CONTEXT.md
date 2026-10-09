@@ -10,6 +10,10 @@ CRM pessoal do Corretor de imóveis: cada Corretor cadastra seus Clientes e os I
 Corretor de imóveis que usa o CRM. Cria a própria conta informando nome, e-mail, senha, CRECI e WhatsApp, e só vê os seus Clientes e Imóveis; Corretores não compartilham nada entre si.
 _Evitar_: Usuário, agente, vendedor, broker, realtor, conta
 
+**Carteira**:
+Os Clientes e Imóveis de um Corretor. É o único caminho até eles: o que é de outro Corretor responde como inexistente.
+_Evitar_: Portfólio, conta, workspace
+
 ### Clientes
 
 **Cliente**:
