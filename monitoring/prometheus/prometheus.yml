@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: kcrm
+    metrics_path: /actuator/prometheus
+    static_configs:
+      # A aplicação roda no host, fora do compose
+      - targets: ["host.docker.internal:8081"]
+
+  - job_name: traefik
+    static_configs:
+      - targets: ["traefik:8082"]
