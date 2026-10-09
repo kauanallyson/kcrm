@@ -2,6 +2,7 @@ package br.com.kauanallyson.kcrm.dto.common;
 
 import br.com.kauanallyson.kcrm.model.common.Cep;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
+import br.com.kauanallyson.kcrm.model.common.FieldErrors;
 import br.com.kauanallyson.kcrm.model.common.Uf;
 
 // As regras de formato ficam nos tipos de valor; aqui só se coletam os erros por campo

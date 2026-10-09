@@ -1,8 +1,8 @@
 package br.com.kauanallyson.kcrm.dto.imovel;
 
 import br.com.kauanallyson.kcrm.dto.common.EnderecoRequest;
-import br.com.kauanallyson.kcrm.dto.common.FieldErrors;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
+import br.com.kauanallyson.kcrm.model.common.FieldErrors;
 import br.com.kauanallyson.kcrm.model.imovel.Imovel;
 import br.com.kauanallyson.kcrm.model.imovel.Proprietario;
 import br.com.kauanallyson.kcrm.model.imovel.Tipo;
@@ -23,16 +23,14 @@ public record ImovelRequest(
         Integer banheiros,
         Integer vagas
 ) {
+    // Formatos e regras do Imóvel voltam todos juntos
     public Imovel.Dados toDados() {
         FieldErrors errors = new FieldErrors();
-        errors.exigir("tipo", tipo, "O tipo não pode ficar em branco");
-        errors.exigir("endereco", endereco, "O endereço não pode ficar em branco");
-        errors.exigir("precoVenda", precoVenda, "O preço de venda não pode ficar em branco");
-        errors.exigir("proprietario", proprietario, "O Proprietário não pode ficar em branco");
         Endereco enderecoValido = endereco == null ? null : endereco.toEndereco(errors);
         Proprietario proprietarioValido = proprietario == null ? null : proprietario.toProprietario(errors);
+        Imovel.Dados dados = errors.collect(() -> new Imovel.Dados(tipo, enderecoValido, precoVenda,
+                proprietarioValido, area, frente, fundo, quartos, suites, banheiros, vagas));
         errors.throwIfAny();
-        return new Imovel.Dados(tipo, enderecoValido, precoVenda, proprietarioValido,
-                area, frente, fundo, quartos, suites, banheiros, vagas);
+        return dados;
     }
 }
