@@ -28,6 +28,11 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <!-- Correções de segurança à frente do Spring Boot 4.1.1 (CVEs no Tomcat 11.0.24 e no Jackson);
+             remover quando o Boot gerenciar versões iguais ou mais novas -->
+        <tomcat.version>11.0.25</tomcat.version>
+        <jackson-bom.version>3.1.7</jackson-bom.version>
+        <jackson-2-bom.version>2.21.7</jackson-2-bom.version>
         <jjwt.version>0.12.6</jjwt.version>
         <springdoc.version>3.1.1</springdoc.version>
     </properties>
