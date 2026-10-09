@@ -64,6 +64,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(allowedOrigins.stream().map(String::trim).filter(o -> !o.isEmpty()).toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // Sem isso o navegador esconde do frontend o Location do 201, o Retry-After do 429 e o id da requisição
+        config.setExposedHeaders(List.of("Location", "Retry-After", "X-Request-Id"));
         config.setMaxAge(Duration.ofHours(1));
 
         var source = new UrlBasedCorsConfigurationSource();

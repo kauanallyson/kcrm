@@ -9,12 +9,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// A origem permitida vem do default do profile dev (http://localhost:5173)
-@SpringBootTest
+// Origem fixada no teste, para um CORS_ALLOWED_ORIGINS no .env local não mudar o resultado
+@SpringBootTest(properties = "kcrm.cors.allowed-origins=http://localhost:5173")
 @AutoConfigureMockMvc
 @Import(TestcontainersConfig.class)
 class CorsIntegrationTest {
@@ -40,5 +41,14 @@ class CorsIntegrationTest {
                         .header("Access-Control-Request-Method", "POST"))
                 .andExpect(status().isForbidden())
                 .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+    }
+
+    @Test
+    void respostaExpoeHeadersQueOFrontendPrecisaLer() throws Exception {
+        mockMvc.perform(get("/api/auth/me").header("Origin", "http://localhost:5173"))
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"))
+                .andExpect(header().string("Access-Control-Expose-Headers", containsString("Location")))
+                .andExpect(header().string("Access-Control-Expose-Headers", containsString("Retry-After")))
+                .andExpect(header().string("Access-Control-Expose-Headers", containsString("X-Request-Id")));
     }
 }
