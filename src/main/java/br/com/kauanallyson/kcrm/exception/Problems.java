@@ -19,8 +19,4 @@ public final class Problems {
     public static ProblemDetail accessDenied() {
         return of(ErrorCode.ACESSO_NEGADO, "Acesso negado");
     }
-
-    public static ProblemDetail tooManyRequests() {
-        return of(ErrorCode.MUITAS_REQUISICOES, "Muitas requisições; tente novamente em instantes");
-    }
 }

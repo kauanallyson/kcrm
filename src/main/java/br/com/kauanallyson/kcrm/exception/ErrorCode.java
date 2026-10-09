@@ -14,7 +14,6 @@ public enum ErrorCode {
     PARAMETRO_INVALIDO(HttpStatus.BAD_REQUEST),
     VALIDACAO_FALHOU(HttpStatus.BAD_REQUEST),
     CONFLITO_DE_DADOS(HttpStatus.CONFLICT),
-    MUITAS_REQUISICOES(HttpStatus.TOO_MANY_REQUESTS),
     ERRO_INTERNO(HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final HttpStatus status;
