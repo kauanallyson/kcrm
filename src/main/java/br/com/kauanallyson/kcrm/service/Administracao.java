@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
+import br.com.kauanallyson.kcrm.auditoria.Auditoria;
 import br.com.kauanallyson.kcrm.exception.CorretorNaoEncontradoException;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import br.com.kauanallyson.kcrm.repository.CorretorRepository;
@@ -14,9 +15,11 @@ import java.util.UUID;
 @Service
 public class Administracao {
     private final CorretorRepository corretorRepository;
+    private final Auditoria auditoria;
 
-    public Administracao(CorretorRepository corretorRepository) {
+    public Administracao(CorretorRepository corretorRepository, Auditoria auditoria) {
         this.corretorRepository = corretorRepository;
+        this.auditoria = auditoria;
     }
 
     @Transactional(readOnly = true)
@@ -27,11 +30,13 @@ public class Administracao {
     @Transactional
     public void suspender(UUID corretorId) {
         corretor(corretorId).suspender();
+        auditoria.registrar("corretor.suspenso", corretorId, corretorId);
     }
 
     @Transactional
     public void reativar(UUID corretorId) {
         corretor(corretorId).reativar();
+        auditoria.registrar("corretor.reativado", corretorId, corretorId);
     }
 
     private Corretor corretor(UUID id) {

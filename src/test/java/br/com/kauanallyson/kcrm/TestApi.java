@@ -41,9 +41,13 @@ public final class TestApi {
     }
 
     public ResultActions confirmar(String token) throws Exception {
+        return confirmar(token, SENHA);
+    }
+
+    public ResultActions confirmar(String token, String senha) throws Exception {
         return perform(json(post("/api/auth/confirmacao"), """
-                {"token":"%s"}
-                """.formatted(token)));
+                {"token":"%s","senha":"%s"}
+                """.formatted(token, senha)));
     }
 
     public UUID cadastrarSemConfirmar(String email) throws Exception {

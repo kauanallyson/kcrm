@@ -1,6 +1,9 @@
 package br.com.kauanallyson.kcrm.repository;
 
 import br.com.kauanallyson.kcrm.model.imovel.Imovel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +16,9 @@ import java.util.UUID;
 
 @Repository
 public interface ImovelRepository extends JpaRepository<Imovel, UUID> {
-    List<Imovel> findAllByCorretorIdOrderByCriadoEmDesc(UUID corretorId);
+    Page<Imovel> findAllByCorretorId(UUID corretorId, Pageable pageable);
+
+    List<Imovel> findAllByCorretorId(UUID corretorId, Sort sort);
 
     Optional<Imovel> findByIdAndCorretorId(UUID id, UUID corretorId);
 

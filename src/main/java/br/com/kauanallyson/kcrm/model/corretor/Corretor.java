@@ -62,6 +62,21 @@ public class Corretor {
             String senha,
             PasswordEncoder encoder
     ) {
+        Corretor corretor = new Corretor();
+        corretor.preencher(dados, senha, encoder);
+        return corretor;
+    }
+
+    // Cadastro repetido com o e-mail de uma conta ainda não confirmada: vale o mais recente, senha inclusive.
+    // Quem cadastrou antes não fica com a conta só por ter chegado primeiro a um e-mail que não é dele
+    public void recadastrar(Dados dados, String senha, PasswordEncoder encoder) {
+        if (emailConfirmado) {
+            throw new IllegalStateException("Corretor com e-mail confirmado não é recadastrado");
+        }
+        preencher(dados, senha, encoder);
+    }
+
+    private void preencher(Dados dados, String senha, PasswordEncoder encoder) {
         if (dados.nome() == null || dados.nome().isBlank()) {
             throw new ValorInvalidoException("nome", "O nome não pode ficar em branco");
         }
@@ -77,13 +92,11 @@ public class Corretor {
         if (dados.creci().strip().length() > CRECI_MAXIMO) {
             throw new ValorInvalidoException("creci", "O CRECI deve ter no máximo " + CRECI_MAXIMO + " caracteres");
         }
-        Corretor corretor = new Corretor();
-        corretor.nome = dados.nome().strip();
-        corretor.email = dados.email();
-        corretor.creci = dados.creci().strip().toUpperCase();
-        corretor.whatsapp = dados.whatsapp();
-        corretor.senhaHash = SenhaHash.encode(senha, encoder);
-        return corretor;
+        nome = dados.nome().strip();
+        email = dados.email();
+        creci = dados.creci().strip().toUpperCase();
+        whatsapp = dados.whatsapp();
+        senhaHash = SenhaHash.encode(senha, encoder);
     }
 
     // Idempotentes: suspender um Suspenso ou reativar um ativo não muda nada

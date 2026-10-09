@@ -42,8 +42,8 @@ public class ContaService {
     // Cópia completa da Carteira, só a do próprio Corretor
     @Transactional(readOnly = true)
     public ExportacaoDaCarteiraResponse exportar(CorretorId corretorId) {
-        return ExportacaoDaCarteiraResponse.of(corretor(corretorId), carteira.clientes(corretorId),
-                carteira.imoveis(corretorId));
+        return ExportacaoDaCarteiraResponse.of(corretor(corretorId), carteira.todosOsClientes(corretorId),
+                carteira.todosOsImoveis(corretorId));
     }
 
     // Encerramento de Conta: definitivo e imediato, tudo numa transação. Senha errada não apaga nada

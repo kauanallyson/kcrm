@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
+import br.com.kauanallyson.kcrm.auditoria.Auditoria;
 import br.com.kauanallyson.kcrm.exception.ClienteNaoEncontradoException;
 import br.com.kauanallyson.kcrm.exception.ImovelNaoEncontradoException;
 import br.com.kauanallyson.kcrm.model.cliente.Cliente;
@@ -8,24 +9,36 @@ import br.com.kauanallyson.kcrm.model.imovel.Imovel;
 import br.com.kauanallyson.kcrm.repository.ClienteRepository;
 import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import br.com.kauanallyson.kcrm.repository.ImovelRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 // Clientes e Imóveis de um Corretor. Único caminho até eles: o de outro Corretor responde como inexistente
 @Service
 public class Carteira {
+    private static final Set<String> ORDENACAO_CLIENTES = Set.of("nome", "origem", "criadoEm", "atualizadoEm");
+    private static final Set<String> ORDENACAO_IMOVEIS = Set.of(
+            "tipo", "situacao", "precoVenda", "area", "quartos", "suites", "banheiros", "vagas",
+            "criadoEm", "atualizadoEm");
+
     private final ClienteRepository clienteRepository;
     private final ImovelRepository imovelRepository;
     private final CorretorRepository corretorRepository;
+    private final Auditoria auditoria;
 
     public Carteira(
             ClienteRepository clienteRepository,
             ImovelRepository imovelRepository,
-            CorretorRepository corretorRepository
+            CorretorRepository corretorRepository,
+            Auditoria auditoria
     ) {
+        this.auditoria = auditoria;
         this.clienteRepository = clienteRepository;
         this.imovelRepository = imovelRepository;
         this.corretorRepository = corretorRepository;
@@ -33,12 +46,20 @@ public class Carteira {
 
     @Transactional
     public Cliente cadastrarCliente(CorretorId corretor, Cliente.Dados dados) {
-        return clienteRepository.save(Cliente.cadastrar(dados, corretorRepository.getReferenceById(corretor.value())));
+        Cliente cliente = clienteRepository.save(Cliente.cadastrar(dados, corretorRepository.getReferenceById(corretor.value())));
+        auditoria.registrar("cliente.criado", corretor.value(), cliente.getId());
+        return cliente;
     }
 
     @Transactional(readOnly = true)
-    public List<Cliente> clientes(CorretorId corretor) {
-        return clienteRepository.findAllByCorretorIdOrderByNomeAsc(corretor.value());
+    public Page<Cliente> clientes(CorretorId corretor, Pageable pageable) {
+        return clienteRepository.findAllByCorretorId(corretor.value(), Ordenacao.restrita(pageable, ORDENACAO_CLIENTES));
+    }
+
+    // Sem paginação: só para a Exportação da Carteira, que entrega tudo de uma vez
+    @Transactional(readOnly = true)
+    public List<Cliente> todosOsClientes(CorretorId corretor) {
+        return clienteRepository.findAllByCorretorId(corretor.value(), Sort.by("nome", "id"));
     }
 
     @Transactional(readOnly = true)
@@ -55,22 +76,32 @@ public class Carteira {
     ) {
         Cliente cliente = cliente(corretor, id);
         cliente.atualizarDados(dados);
+        auditoria.registrar("cliente.alterado", corretor.value(), id);
         return cliente;
     }
 
     @Transactional
     public void apagarCliente(CorretorId corretor, UUID id) {
         clienteRepository.delete(cliente(corretor, id));
+        auditoria.registrar("cliente.apagado", corretor.value(), id);
     }
 
     @Transactional
     public Imovel cadastrarImovel(CorretorId corretor, Imovel.Dados dados) {
-        return imovelRepository.save(Imovel.cadastrar(dados, corretorRepository.getReferenceById(corretor.value())));
+        Imovel imovel = imovelRepository.save(Imovel.cadastrar(dados, corretorRepository.getReferenceById(corretor.value())));
+        auditoria.registrar("imovel.criado", corretor.value(), imovel.getId());
+        return imovel;
     }
 
     @Transactional(readOnly = true)
-    public List<Imovel> imoveis(CorretorId corretor) {
-        return imovelRepository.findAllByCorretorIdOrderByCriadoEmDesc(corretor.value());
+    public Page<Imovel> imoveis(CorretorId corretor, Pageable pageable) {
+        return imovelRepository.findAllByCorretorId(corretor.value(), Ordenacao.restrita(pageable, ORDENACAO_IMOVEIS));
+    }
+
+    // Sem paginação: só para a Exportação da Carteira, que entrega tudo de uma vez
+    @Transactional(readOnly = true)
+    public List<Imovel> todosOsImoveis(CorretorId corretor) {
+        return imovelRepository.findAllByCorretorId(corretor.value(), Sort.by(Sort.Direction.DESC, "criadoEm").and(Sort.by("id")));
     }
 
     @Transactional(readOnly = true)
@@ -87,6 +118,7 @@ public class Carteira {
     ) {
         Imovel imovel = imovel(corretor, id);
         imovel.atualizarDados(dados);
+        auditoria.registrar("imovel.alterado", corretor.value(), id);
         return imovel;
     }
 
@@ -94,6 +126,7 @@ public class Carteira {
     public Imovel marcarVendido(CorretorId corretor, UUID id) {
         Imovel imovel = imovel(corretor, id);
         imovel.marcarVendido();
+        auditoria.registrar("imovel.vendido", corretor.value(), id);
         return imovel;
     }
 
@@ -101,5 +134,6 @@ public class Carteira {
     @Transactional
     public void apagarImovel(CorretorId corretor, UUID id) {
         imovelRepository.delete(imovel(corretor, id));
+        auditoria.registrar("imovel.apagado", corretor.value(), id);
     }
 }

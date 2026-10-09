@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
+import br.com.kauanallyson.kcrm.auditoria.Auditoria;
 import br.com.kauanallyson.kcrm.dto.corretor.CadastroCorretorRequest;
 import br.com.kauanallyson.kcrm.exception.CorretorJaExisteException;
 import br.com.kauanallyson.kcrm.exception.CorretorNaoEncontradoException;
@@ -19,20 +20,24 @@ public class CorretorService {
     private final AdministradorRepository administradorRepository;
     private final PasswordEncoder passwordEncoder;
     private final ConfirmacaoDeEmailService confirmacaoDeEmail;
+    private final Auditoria auditoria;
 
     public CorretorService(
             CorretorRepository corretorRepository,
             AdministradorRepository administradorRepository,
             PasswordEncoder passwordEncoder,
-            ConfirmacaoDeEmailService confirmacaoDeEmail
+            ConfirmacaoDeEmailService confirmacaoDeEmail,
+            Auditoria auditoria
     ) {
         this.confirmacaoDeEmail = confirmacaoDeEmail;
         this.corretorRepository = corretorRepository;
         this.administradorRepository = administradorRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditoria = auditoria;
     }
 
-    // Com e-mail de conta não confirmada, só reenvia o link (sem mudar os dados dela) e devolve vazio
+    // Com e-mail de conta não confirmada, troca os dados e a senha dela pelos novos, manda um link novo
+    // (o anterior deixa de valer) e devolve vazio
     @Transactional
     public Optional<Corretor> cadastrar(CadastroCorretorRequest request) {
         Corretor.Dados dados = request.toDados();
@@ -45,10 +50,13 @@ public class CorretorService {
             if (existente.get().isEmailConfirmado()) {
                 throw new CorretorJaExisteException();
             }
+            existente.get().recadastrar(dados, request.senha(), passwordEncoder);
+            auditoria.registrar("corretor.recadastrado", existente.get().getId(), existente.get().getId());
             confirmacaoDeEmail.enviarLink(existente.get());
             return Optional.empty();
         }
         Corretor corretor = corretorRepository.save(Corretor.cadastrar(dados, request.senha(), passwordEncoder));
+        auditoria.registrar("corretor.cadastrado", corretor.getId(), corretor.getId());
         confirmacaoDeEmail.enviarLink(corretor);
         return Optional.of(corretor);
     }
