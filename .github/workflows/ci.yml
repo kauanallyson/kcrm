@@ -40,3 +40,58 @@ jobs:
         run: >
           docker run --rm -v "$PWD":/src:ro aquasec/trivy:0.65.0
           fs --scanners vuln --severity CRITICAL --ignore-unfixed --exit-code 1 /src
+
+  imagem:
+    name: Imagem no Docker Hub
+    # Só na main e depois dos testes e do scan de dependências; PR nunca publica
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [verify, dependencias]
+    runs-on: ubuntu-latest
+    env:
+      IMAGEM: kauanallyson/kcrm
+    steps:
+      - uses: actions/checkout@v5
+
+      # arm64 para a VPS da Oracle, emulado via QEMU no runner amd64
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGEM }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest
+
+      # Build amd64 carregado no runner só para o Trivy escanear antes de qualquer push
+      - name: Build para o scan
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: kcrm:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trivy na imagem
+        run: >
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.65.0
+          image --scanners vuln --severity CRITICAL --ignore-unfixed --exit-code 1 kcrm:scan
+
+      - name: Build e push multi-arch
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
