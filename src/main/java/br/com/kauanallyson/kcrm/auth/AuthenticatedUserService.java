@@ -1,6 +1,7 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import lombok.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,9 +35,8 @@ public class AuthenticatedUserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Corretor não encontrado"));
     }
 
-    public Optional<AuthenticatedUser> loadById(UUID id) {
-        // Recarregado a cada requisição: o token de um Corretor que não existe mais deixa de valer
-        return corretorRepository.findById(id)
-                .map(AuthenticatedUser::from);
+    // Conferido a cada requisição: o token de um Corretor que não existe mais deixa de valer
+    public Optional<CorretorId> loadById(UUID id) {
+        return corretorRepository.existsById(id) ? Optional.of(new CorretorId(id)) : Optional.empty();
     }
 }

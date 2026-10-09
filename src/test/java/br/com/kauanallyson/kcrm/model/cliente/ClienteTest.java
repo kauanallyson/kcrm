@@ -1,6 +1,6 @@
 package br.com.kauanallyson.kcrm.model.cliente;
 
-import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
+import br.com.kauanallyson.kcrm.exception.ValoresInvalidosException;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import org.junit.jupiter.api.Test;
 
@@ -28,15 +28,13 @@ class ClienteTest {
     @Test
     void indicadoPorEhObrigatorioNaIndicacao() {
         assertThatThrownBy(() -> Cliente.cadastrar(dados(Origem.INDICACAO, "  "), corretor()))
-                .isInstanceOf(ValorInvalidoException.class)
-                .extracting("campo").isEqualTo("indicadoPor");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("indicadoPor"));
     }
 
     @Test
     void indicadoPorEhProibidoForaDaIndicacao() {
         assertThatThrownBy(() -> Cliente.cadastrar(dados(Origem.INSTAGRAM, "João"), corretor()))
-                .isInstanceOf(ValorInvalidoException.class)
-                .extracting("campo").isEqualTo("indicadoPor");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("indicadoPor"));
     }
 
     @Test
@@ -57,8 +55,8 @@ class ClienteTest {
     void nomeEOrigemSaoObrigatorios() {
         assertThatThrownBy(() -> Cliente.cadastrar(
                 new Cliente.Dados(" ", WHATSAPP, Origem.SITE, null, null, null, null), corretor()))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("nome");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("nome"));
         assertThatThrownBy(() -> Cliente.cadastrar(dados(null, null), corretor()))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("origem");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("origem"));
     }
 }

@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.auth;
 
+import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -35,9 +37,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .map(header -> header.substring(BEARER_PREFIX.length()));
     }
 
-    private static void authenticate(AuthenticatedUser principal, HttpServletRequest request) {
+    // O principal é só a identidade do Corretor; credenciais ficam no login
+    private static void authenticate(CorretorId principal, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
-                .authenticated(principal, null, principal.getAuthorities());
+                .authenticated(principal, null, List.of());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();

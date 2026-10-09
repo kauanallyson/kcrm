@@ -3,6 +3,7 @@ package br.com.kauanallyson.kcrm.model.imovel;
 import br.com.kauanallyson.kcrm.TestDominio;
 import br.com.kauanallyson.kcrm.exception.ImovelVendidoException;
 import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
+import br.com.kauanallyson.kcrm.exception.ValoresInvalidosException;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
@@ -48,19 +49,19 @@ class ImovelTest {
     @Test
     void precoDeVendaDeveSerPositivo() {
         assertThatThrownBy(() -> Imovel.cadastrar(dados(BigDecimal.ZERO), CORRETOR))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("precoVenda");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("precoVenda"));
         assertThatThrownBy(() -> Imovel.cadastrar(dados(null), CORRETOR))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("precoVenda");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("precoVenda"));
     }
 
     @Test
     void medidasPositivasEContagensNaoNegativas() {
         assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(Tipo.CASA, ENDERECO, BigDecimal.TEN, PROPRIETARIO,
                 BigDecimal.ZERO, null, null, null, null, null, null), CORRETOR))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("area");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("area"));
         assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(Tipo.CASA, ENDERECO, BigDecimal.TEN, PROPRIETARIO,
                 null, null, null, -1, null, null, null), CORRETOR))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("quartos");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("quartos"));
         Imovel semVagas = Imovel.cadastrar(new Imovel.Dados(Tipo.CASA, ENDERECO, BigDecimal.TEN, PROPRIETARIO,
                 null, null, null, null, null, null, 0), CORRETOR);
         assertThat(semVagas.getVagas()).isZero();
@@ -81,13 +82,21 @@ class ImovelTest {
     void tipoEnderecoEProprietarioSaoObrigatorios() {
         assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(null, ENDERECO, BigDecimal.TEN, PROPRIETARIO,
                 null, null, null, null, null, null, null), CORRETOR))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("tipo");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("tipo"));
         assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(Tipo.CASA, null, BigDecimal.TEN, PROPRIETARIO,
                 null, null, null, null, null, null, null), CORRETOR))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("endereco");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("endereco"));
         assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(Tipo.CASA, ENDERECO, BigDecimal.TEN, null,
                 null, null, null, null, null, null, null), CORRETOR))
-                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("proprietario");
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors()).containsKey("proprietario"));
+    }
+
+    @Test
+    void todosOsErrosVoltamJuntos() {
+        assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(null, ENDERECO, BigDecimal.ZERO, PROPRIETARIO,
+                BigDecimal.ZERO, null, null, -1, null, null, null), CORRETOR))
+                .isInstanceOfSatisfying(ValoresInvalidosException.class, e -> assertThat(e.getErrors())
+                        .containsOnlyKeys("tipo", "precoVenda", "area", "quartos"));
     }
 
     @Test

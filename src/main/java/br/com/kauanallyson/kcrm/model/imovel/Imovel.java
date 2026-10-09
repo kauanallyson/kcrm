@@ -1,8 +1,8 @@
 package br.com.kauanallyson.kcrm.model.imovel;
 
 import br.com.kauanallyson.kcrm.exception.ImovelVendidoException;
-import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
+import br.com.kauanallyson.kcrm.model.common.FieldErrors;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -80,56 +80,20 @@ public class Imovel {
         return imovel;
     }
 
-    private static BigDecimal medida(
-            String campo,
-            String nome,
-            BigDecimal valor
-    ) {
-        if (valor != null && valor.signum() <= 0) {
-            throw new ValorInvalidoException(campo, nome + " deve ser maior que zero");
-        }
-        return valor;
-    }
-
-    private static Integer contagem(
-            String campo,
-            String nome,
-            Integer valor
-    ) {
-        if (valor != null && valor < 0) {
-            throw new ValorInvalidoException(campo, nome + " não pode ser negativo");
-        }
-        return valor;
-    }
-
+    // Dados chegam válidos: as regras ficam em Dados, que aponta todos os erros de uma vez
     public void atualizarDados(Dados dados) {
         exigirDisponivel();
-        if (dados.tipo() == null) {
-            throw new ValorInvalidoException("tipo", "O tipo não pode ficar em branco");
-        }
-        if (dados.endereco() == null) {
-            throw new ValorInvalidoException("endereco", "O endereço não pode ficar em branco");
-        }
-        if (dados.proprietario() == null) {
-            throw new ValorInvalidoException("proprietario", "O Proprietário não pode ficar em branco");
-        }
-        if (dados.precoVenda() == null) {
-            throw new ValorInvalidoException("precoVenda", "O preço de venda não pode ficar em branco");
-        }
-        if (dados.precoVenda().signum() <= 0) {
-            throw new ValorInvalidoException("precoVenda", "O preço de venda deve ser maior que zero");
-        }
         this.tipo = dados.tipo();
         this.endereco = dados.endereco();
         this.proprietario = dados.proprietario();
         this.precoVenda = dados.precoVenda();
-        this.area = medida("area", "A área", dados.area());
-        this.frente = medida("frente", "A frente", dados.frente());
-        this.fundo = medida("fundo", "O fundo", dados.fundo());
-        this.quartos = contagem("quartos", "O número de quartos", dados.quartos());
-        this.suites = contagem("suites", "O número de suítes", dados.suites());
-        this.banheiros = contagem("banheiros", "O número de banheiros", dados.banheiros());
-        this.vagas = contagem("vagas", "O número de vagas", dados.vagas());
+        this.area = dados.area();
+        this.frente = dados.frente();
+        this.fundo = dados.fundo();
+        this.quartos = dados.quartos();
+        this.suites = dados.suites();
+        this.banheiros = dados.banheiros();
+        this.vagas = dados.vagas();
     }
 
     public void marcarVendido() {
@@ -140,6 +104,28 @@ public class Imovel {
     private void exigirDisponivel() {
         if (situacao == Situacao.VENDIDO) {
             throw new ImovelVendidoException(id);
+        }
+    }
+
+    private static void medida(
+            FieldErrors errors,
+            String campo,
+            String nome,
+            BigDecimal valor
+    ) {
+        if (valor != null && valor.signum() <= 0) {
+            errors.rejeitar(campo, nome + " deve ser maior que zero");
+        }
+    }
+
+    private static void contagem(
+            FieldErrors errors,
+            String campo,
+            String nome,
+            Integer valor
+    ) {
+        if (valor != null && valor < 0) {
+            errors.rejeitar(campo, nome + " não pode ser negativo");
         }
     }
 
@@ -156,5 +142,23 @@ public class Imovel {
             Integer banheiros,
             Integer vagas
     ) {
+        public Dados {
+            FieldErrors errors = new FieldErrors();
+            errors.exigir("tipo", tipo, "O tipo não pode ficar em branco");
+            errors.exigir("endereco", endereco, "O endereço não pode ficar em branco");
+            errors.exigir("precoVenda", precoVenda, "O preço de venda não pode ficar em branco");
+            errors.exigir("proprietario", proprietario, "O Proprietário não pode ficar em branco");
+            if (precoVenda != null && precoVenda.signum() <= 0) {
+                errors.rejeitar("precoVenda", "O preço de venda deve ser maior que zero");
+            }
+            medida(errors, "area", "A área", area);
+            medida(errors, "frente", "A frente", frente);
+            medida(errors, "fundo", "O fundo", fundo);
+            contagem(errors, "quartos", "O número de quartos", quartos);
+            contagem(errors, "suites", "O número de suítes", suites);
+            contagem(errors, "banheiros", "O número de banheiros", banheiros);
+            contagem(errors, "vagas", "O número de vagas", vagas);
+            errors.throwIfAny();
+        }
     }
 }

@@ -4,6 +4,7 @@ import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
+import br.com.kauanallyson.kcrm.model.common.FieldErrors;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import jakarta.persistence.*;
@@ -82,6 +83,17 @@ public class Cliente {
         return cliente;
     }
 
+    // Dados chegam válidos: as regras ficam em Dados, que aponta todos os erros de uma vez
+    public void atualizarDados(Dados dados) {
+        this.nome = dados.nome();
+        this.whatsapp = dados.whatsapp();
+        this.origem = dados.origem();
+        this.indicadoPor = dados.indicadoPor();
+        this.cpf = dados.cpf();
+        this.email = dados.email();
+        this.endereco = dados.endereco();
+    }
+
     // Obrigatório só na Indicação; normalizado como nome próprio: "joão DA silva" vira "João da Silva"
     private static String indicadoPorDa(Origem origem, String indicadoPor) {
         boolean informado = indicadoPor != null && !indicadoPor.isBlank();
@@ -110,25 +122,6 @@ public class Cliente {
         return String.join(" ", normalizadas);
     }
 
-    public void atualizarDados(Dados dados) {
-        if (dados.nome() == null || dados.nome().isBlank()) {
-            throw new ValorInvalidoException("nome", "O nome não pode ficar em branco");
-        }
-        if (dados.whatsapp() == null) {
-            throw new ValorInvalidoException("whatsapp", "O WhatsApp não pode ficar em branco");
-        }
-        if (dados.origem() == null) {
-            throw new ValorInvalidoException("origem", "A origem não pode ficar em branco");
-        }
-        this.nome = dados.nome().strip();
-        this.whatsapp = dados.whatsapp();
-        this.origem = dados.origem();
-        this.indicadoPor = indicadoPorDa(dados.origem(), dados.indicadoPor());
-        this.cpf = dados.cpf();
-        this.email = dados.email();
-        this.endereco = dados.endereco();
-    }
-
     public record Dados(
             String nome,
             Telefone whatsapp,
@@ -138,5 +131,15 @@ public class Cliente {
             Email email,
             Endereco endereco
     ) {
+        public Dados {
+            FieldErrors errors = new FieldErrors();
+            errors.exigir("nome", nome, "O nome não pode ficar em branco");
+            errors.exigir("whatsapp", whatsapp, "O WhatsApp não pode ficar em branco");
+            errors.exigir("origem", origem, "A origem não pode ficar em branco");
+            String informado = indicadoPor;
+            indicadoPor = errors.collect(() -> indicadoPorDa(origem, informado));
+            errors.throwIfAny();
+            nome = nome.strip();
+        }
     }
 }
