@@ -5,23 +5,24 @@ import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
 import br.com.kauanallyson.kcrm.model.common.Email;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import br.com.kauanallyson.kcrm.model.corretor.SenhaHash;
 
 public record CadastroCorretorRequest(
-        @NotBlank(message = "O nome não pode ficar em branco")
         String nome,
         String email,
-        @NotBlank(message = "A senha não pode ficar em branco")
-        @Size(min = 8, max = 72, message = "A senha deve ter entre 8 e 72 caracteres")
         String senha,
-        @NotBlank(message = "O CRECI não pode ficar em branco")
         String creci,
         String whatsapp
 ) {
-    // Formatos são validados pelos próprios tipos de valor, com as mesmas mensagens em toda parte
+    // Obrigatórios, senha e formatos voltam todos juntos, com as mesmas mensagens do domínio
     public Corretor.Dados toDados() {
         FieldErrors errors = new FieldErrors();
+        errors.exigir("nome", nome, "O nome não pode ficar em branco");
+        errors.exigir("creci", creci, "O CRECI não pode ficar em branco");
+        errors.collect(() -> {
+            SenhaHash.validar(senha);
+            return null;
+        });
         Email emailValido = errors.collect(() -> new Email(email));
         Telefone whatsappValido = errors.collect(() -> whatsapp(whatsapp));
         errors.throwIfAny();

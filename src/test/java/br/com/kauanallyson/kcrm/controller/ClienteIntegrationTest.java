@@ -50,7 +50,7 @@ class ClienteIntegrationTest {
     }
 
     @Test
-    void corretorCadastraClienteEPassaAAtendeLo() throws Exception {
+    void corretorCadastraCliente() throws Exception {
         mockMvc.perform(comToken(json(post("/api/clientes"),
                         clienteJson(",\"origem\":\"INDICACAO\",\"indicadoPor\":\"joão DA silva\"")), corretor))
                 .andExpect(status().isCreated())
@@ -70,6 +70,15 @@ class ClienteIntegrationTest {
                 .andExpect(jsonPath("$.errors.whatsapp").exists())
                 .andExpect(jsonPath("$.errors.cpf").exists())
                 .andExpect(jsonPath("$.errors.email").exists());
+    }
+
+    @Test
+    void obrigatoriosEFormatosVoltamJuntos() throws Exception {
+        mockMvc.perform(comToken(json(post("/api/clientes"), "{\"whatsapp\":\"123\"}"), corretor))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.nome").exists())
+                .andExpect(jsonPath("$.errors.origem").exists())
+                .andExpect(jsonPath("$.errors.whatsapp").exists());
     }
 
     @Test

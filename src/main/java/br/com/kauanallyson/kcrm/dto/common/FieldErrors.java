@@ -20,6 +20,17 @@ public final class FieldErrors {
         }
     }
 
+    // Campo obrigatório ausente (nulo ou texto em branco) vira erro do campo, junto com os demais
+    public void exigir(
+            String campo,
+            Object valor,
+            String mensagem
+    ) {
+        if (valor == null || valor instanceof String texto && texto.isBlank()) {
+            errors.putIfAbsent(campo, mensagem);
+        }
+    }
+
     public void throwIfAny() {
         if (!errors.isEmpty()) {
             throw new ValoresInvalidosException(errors);

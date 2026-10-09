@@ -71,7 +71,9 @@ class AuthIntegrationTest {
         mockMvc.perform(json(post("/api/auth/cadastro"), body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.senha").exists())
-                .andExpect(jsonPath("$.errors.creci").exists());
+                .andExpect(jsonPath("$.errors.creci").exists())
+                .andExpect(jsonPath("$.errors.email").exists())
+                .andExpect(jsonPath("$.errors.whatsapp").exists());
     }
 
     @Test

@@ -88,6 +88,22 @@ class ImovelIntegrationTest {
     }
 
     @Test
+    void obrigatoriosAusentesVoltamJuntos() throws Exception {
+        mockMvc.perform(comToken(json(post("/api/imoveis"), "{}"), corretor))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.tipo").exists())
+                .andExpect(jsonPath("$.errors.endereco").exists())
+                .andExpect(jsonPath("$.errors.precoVenda").exists())
+                .andExpect(jsonPath("$.errors.proprietario").exists());
+    }
+
+    @Test
+    void tipoInexistenteEhRequisicaoInvalida() throws Exception {
+        mockMvc.perform(comToken(json(post("/api/imoveis"), imovelJson("1000", "").replace("CASA", "CASTELO")), corretor))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void corretorEditaOProprioImovel() throws Exception {
         UUID id = cadastrarImovel(corretor);
 

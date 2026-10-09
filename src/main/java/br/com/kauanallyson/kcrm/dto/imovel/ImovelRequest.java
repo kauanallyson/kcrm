@@ -6,19 +6,14 @@ import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.imovel.Imovel;
 import br.com.kauanallyson.kcrm.model.imovel.Proprietario;
 import br.com.kauanallyson.kcrm.model.imovel.Tipo;
-import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
 // Características (área, frente, fundo, quartos, suítes, banheiros, vagas) são opcionais
 public record ImovelRequest(
-        @NotNull(message = "O tipo não pode ficar em branco")
         Tipo tipo,
-        @NotNull(message = "O endereço não pode ficar em branco")
         EnderecoRequest endereco,
-        @NotNull(message = "O preço de venda não pode ficar em branco")
         BigDecimal precoVenda,
-        @NotNull(message = "O Proprietário não pode ficar em branco")
         ProprietarioRequest proprietario,
         BigDecimal area,
         BigDecimal frente,
@@ -30,8 +25,12 @@ public record ImovelRequest(
 ) {
     public Imovel.Dados toDados() {
         FieldErrors errors = new FieldErrors();
-        Endereco enderecoValido = endereco.toEndereco(errors);
-        Proprietario proprietarioValido = proprietario.toProprietario(errors);
+        errors.exigir("tipo", tipo, "O tipo não pode ficar em branco");
+        errors.exigir("endereco", endereco, "O endereço não pode ficar em branco");
+        errors.exigir("precoVenda", precoVenda, "O preço de venda não pode ficar em branco");
+        errors.exigir("proprietario", proprietario, "O Proprietário não pode ficar em branco");
+        Endereco enderecoValido = endereco == null ? null : endereco.toEndereco(errors);
+        Proprietario proprietarioValido = proprietario == null ? null : proprietario.toProprietario(errors);
         errors.throwIfAny();
         return new Imovel.Dados(tipo, enderecoValido, precoVenda, proprietarioValido,
                 area, frente, fundo, quartos, suites, banheiros, vagas);

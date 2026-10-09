@@ -20,13 +20,17 @@ public final class SenhaHash {
 
     // Sem strip: espaços fazem parte da senha. 72 bytes é o limite do BCrypt
     public static SenhaHash encode(String senha, PasswordEncoder encoder) {
+        validar(senha);
+        return new SenhaHash(encoder.encode(senha));
+    }
+
+    public static void validar(String senha) {
         if (senha == null || senha.isBlank()) {
             throw new ValorInvalidoException("senha", "A senha não pode ficar em branco");
         }
         if (senha.length() < MINIMO || senha.getBytes(StandardCharsets.UTF_8).length > MAXIMO_BYTES) {
             throw new ValorInvalidoException("senha", "A senha deve ter entre 8 e 72 caracteres");
         }
-        return new SenhaHash(encoder.encode(senha));
     }
 
     static SenhaHash fromStored(String value) {

@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.model.imovel;
 
+import br.com.kauanallyson.kcrm.TestDominio;
 import br.com.kauanallyson.kcrm.exception.ImovelVendidoException;
 import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
@@ -8,7 +9,6 @@ import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 
 import java.math.BigDecimal;
 
@@ -16,9 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ImovelTest {
-    private static final Corretor CORRETOR = Corretor.cadastrar(
-            new Corretor.Dados("Bruno", new Email("bruno@test.com"), "CRECI-CE 1234", new Telefone("88999990000")),
-            "segredo123", PasswordEncoderFactories.createDelegatingPasswordEncoder());
+    private static final Corretor CORRETOR = TestDominio.corretor();
     private static final Endereco ENDERECO = Endereco.de("Rua A", "1", null, "Centro", "Sobral", "CE", "62010000");
     private static final Proprietario PROPRIETARIO = new Proprietario("  Ana  ", new Telefone("88999991111"),
             new Email("ana@test.com"), new Cpf("52998224725"));
@@ -77,6 +75,19 @@ class ImovelTest {
         assertThatThrownBy(() -> imovel.atualizarDados(dados(BigDecimal.ONE)))
                 .isInstanceOf(ImovelVendidoException.class);
         assertThatThrownBy(imovel::marcarVendido).isInstanceOf(ImovelVendidoException.class);
+    }
+
+    @Test
+    void tipoEnderecoEProprietarioSaoObrigatorios() {
+        assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(null, ENDERECO, BigDecimal.TEN, PROPRIETARIO,
+                null, null, null, null, null, null, null), CORRETOR))
+                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("tipo");
+        assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(Tipo.CASA, null, BigDecimal.TEN, PROPRIETARIO,
+                null, null, null, null, null, null, null), CORRETOR))
+                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("endereco");
+        assertThatThrownBy(() -> Imovel.cadastrar(new Imovel.Dados(Tipo.CASA, ENDERECO, BigDecimal.TEN, null,
+                null, null, null, null, null, null, null), CORRETOR))
+                .isInstanceOf(ValorInvalidoException.class).extracting("campo").isEqualTo("proprietario");
     }
 
     @Test
