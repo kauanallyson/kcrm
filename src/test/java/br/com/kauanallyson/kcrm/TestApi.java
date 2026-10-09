@@ -33,8 +33,24 @@ public final class TestApi {
         return JsonPath.read(body, "$.token");
     }
 
-    // Cadastra um Corretor pelo auto-cadastro e devolve o id
+    // Cadastra um Corretor pelo auto-cadastro, confirma o e-mail pelo link recebido e devolve o id
     public UUID cadastrar(String email) throws Exception {
+        UUID id = cadastrarSemConfirmar(email);
+        confirmar(TestEmail.ultimoToken(email)).andExpect(status().isNoContent());
+        return id;
+    }
+
+    public ResultActions confirmar(String token) throws Exception {
+        return confirmar(token, SENHA);
+    }
+
+    public ResultActions confirmar(String token, String senha) throws Exception {
+        return perform(json(post("/api/auth/confirmacao"), """
+                {"token":"%s","senha":"%s"}
+                """.formatted(token, senha)));
+    }
+
+    public UUID cadastrarSemConfirmar(String email) throws Exception {
         String body = perform(json(post("/api/auth/cadastro"), corretorJson(email)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();

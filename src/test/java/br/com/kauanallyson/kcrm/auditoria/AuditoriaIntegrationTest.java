@@ -1,6 +1,7 @@
 package br.com.kauanallyson.kcrm.auditoria;
 
 import br.com.kauanallyson.kcrm.TestApi;
+import br.com.kauanallyson.kcrm.TestEmail;
 import br.com.kauanallyson.kcrm.TestcontainersConfig;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,6 +63,7 @@ class AuditoriaIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         UUID corretor = UUID.fromString(JsonPath.read(cadastro, "$.id"));
+        api.confirmar(TestEmail.ultimoToken(email)).andExpect(status().isNoContent());
         String token = api.login(email, SENHA);
         mockMvc.perform(json(post("/api/auth/login"), loginJson(email, "senhaErrada1"))
                         .header("X-Request-Id", "req-falha"))
