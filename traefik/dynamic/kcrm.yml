@@ -1,5 +1,5 @@
 # A aplicação roda no serviço kcrm do compose; para escalar, adicione uma entrada em servers por instância.
-# O rate limit fica no Redis, então todas as instâncias dividem o mesmo contador.
+# O rate limit é contado em memória, então cada instância tem o próprio contador.
 http:
   routers:
     kcrm:

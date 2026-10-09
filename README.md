@@ -1,11 +1,11 @@
 # kcrm
 
-CRM pessoal do Corretor de imóveis: cada Corretor cadastra seus Clientes e os Imóveis que tem à venda, e só enxerga a própria Carteira. API REST em Spring Boot 4 (Java 21), com PostgreSQL, Redis (rate limit) e autenticação JWT. O glossário do domínio está em [`CONTEXT.md`](CONTEXT.md).
+CRM pessoal do Corretor de imóveis: cada Corretor cadastra seus Clientes e os Imóveis que tem à venda, e só enxerga a própria Carteira. API REST em Spring Boot 4 (Java 21), com PostgreSQL e autenticação JWT. O glossário do domínio está em [`CONTEXT.md`](CONTEXT.md).
 
 ## Requisitos
 
 - Java 21 (o Maven vem pelo wrapper `./mvnw`)
-- Docker com Docker Compose (Postgres e Redis locais, e os testes via Testcontainers)
+- Docker com Docker Compose (Postgres local e os testes via Testcontainers)
 
 ## Rodando localmente
 
@@ -17,7 +17,7 @@ cp .env.example .env
 openssl rand -base64 32
 
 # só os serviços de apoio, para rodar a app no host
-docker compose up -d postgres redis
+docker compose up -d postgres
 
 ./mvnw spring-boot:run
 ```
@@ -33,7 +33,7 @@ O schema do banco é criado e versionado pelo Flyway (`src/main/resources/db/mig
 docker compose up -d --build
 ```
 
-Sobe Postgres, Redis, a app (`kcrm`, construída pelo `Dockerfile`, no profile `prod`), Traefik, Prometheus e Grafana:
+Sobe Postgres, a app (`kcrm`, construída pelo `Dockerfile`, no profile `prod`), Traefik, Prometheus e Grafana:
 
 | Serviço    | Endereço                         |
 |------------|----------------------------------|
@@ -70,8 +70,6 @@ O serviço `kcrm` não publica portas no host: o tráfego entra pelo Traefik e o
 | `DB_POOL_MAX_LIFETIME` | `1800000` | | Vida máxima de uma conexão (ms) |
 | `JWT_SECRET` | — | sim | Chave HMAC em base64, com pelo menos 256 bits (`openssl rand -base64 32`). Obrigatória também em dev |
 | `JWT_EXPIRATION` | `1h` | | Validade do token (`1h`, `30m` ou milissegundos) |
-| `REDIS_HOST` | `localhost` | | Host do Redis |
-| `REDIS_PORT` | `6379` | | Porta do Redis |
 | `RATE_LIMIT_AUTH` | `10` | | Requisições por minuto, por IP, em login/cadastro |
 | `RATE_LIMIT_API` | `100` | | Requisições por segundo, por IP, no resto da API |
 | `MANAGEMENT_PORT` | `8081` | | Porta do Actuator |
@@ -79,7 +77,9 @@ O serviço `kcrm` não publica portas no host: o tráfego entra pelo Traefik e o
 | `GRAFANA_USER` | `admin` | | Usuário admin do Grafana (só compose) |
 | `GRAFANA_PASSWORD` | `admin` | | Senha admin do Grafana (só compose); troque fora do ambiente local |
 
-Dentro do compose, `DB_HOST`, `REDIS_HOST` e as portas do serviço `kcrm` já apontam para os containers.
+Dentro do compose, `DB_HOST` e as portas do serviço `kcrm` já apontam para os containers.
+
+O rate limit é contado em memória, por IP, numa janela fixa: o limite vale por instância da app (com uma única instância, é o limite global). Ao reiniciar a app, os contadores zeram.
 
 ## Testes
 
@@ -87,7 +87,7 @@ Dentro do compose, `DB_HOST`, `REDIS_HOST` e as portas do serviço `kcrm` já ap
 ./mvnw verify
 ```
 
-Os testes de integração sobem PostgreSQL e Redis via Testcontainers, então o Docker precisa estar rodando. Não é preciso `.env` nem `docker compose`.
+Os testes de integração sobem PostgreSQL via Testcontainers, então o Docker precisa estar rodando. Não é preciso `.env` nem `docker compose`.
 
 ## CI
 
@@ -99,4 +99,4 @@ O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) roda em todo p
 
 ## Deploy
 
-A imagem publicada roda no profile `prod`. No host, defina pelo menos `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET` como variáveis de ambiente (não use `.env` em produção) e aponte `DB_HOST`/`REDIS_HOST` para os serviços. A app desliga de forma graciosa ao receber SIGTERM: o orquestrador deve esperar mais que `SHUTDOWN_TIMEOUT` antes de matar o processo (no compose, `stop_grace_period: 30s`).
+A imagem publicada roda no profile `prod`. No host, defina pelo menos `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET` como variáveis de ambiente (não use `.env` em produção) e aponte `DB_HOST` para o banco. A app desliga de forma graciosa ao receber SIGTERM: o orquestrador deve esperar mais que `SHUTDOWN_TIMEOUT` antes de matar o processo (no compose, `stop_grace_period: 30s`).
