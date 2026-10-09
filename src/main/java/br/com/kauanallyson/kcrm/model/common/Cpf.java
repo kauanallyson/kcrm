@@ -17,6 +17,16 @@ public record Cpf(String value) {
                 + "-" + digits.substring(9);
     }
 
+    // CPF nunca vai para log em texto puro: todo toString que o contém passa por aqui
+    public static String mascarar(String cpf) {
+        return cpf == null ? "null" : "***.***.***-**";
+    }
+
+    @Override
+    public String toString() {
+        return "Cpf[" + mascarar(value) + "]";
+    }
+
     private static boolean isValid(String digits) {
         if (digits.length() != LENGTH || digits.chars().distinct().count() == 1) {
             return false;

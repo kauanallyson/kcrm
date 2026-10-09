@@ -31,4 +31,11 @@ public record ClienteRequest(
         errors.throwIfAny();
         return dados;
     }
+
+    @Override
+    public String toString() {
+        return "ClienteRequest[nome=" + nome + ", whatsapp=" + whatsapp + ", origem=" + origem
+                + ", indicadoPor=" + indicadoPor + ", cpf=" + Cpf.mascarar(cpf) + ", email=" + email
+                + ", endereco=" + endereco + "]";
+    }
 }

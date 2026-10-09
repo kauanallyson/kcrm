@@ -11,9 +11,11 @@ import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import br.com.kauanallyson.kcrm.repository.ImovelRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -54,6 +56,12 @@ public class Carteira {
         return clienteRepository.findAllByCorretorId(corretor.value(), Ordenacao.restrita(pageable, ORDENACAO_CLIENTES));
     }
 
+    // Sem paginação: só para a Exportação da Carteira, que entrega tudo de uma vez
+    @Transactional(readOnly = true)
+    public List<Cliente> todosOsClientes(CorretorId corretor) {
+        return clienteRepository.findAllByCorretorId(corretor.value(), Sort.by("nome", "id"));
+    }
+
     @Transactional(readOnly = true)
     public Cliente cliente(CorretorId corretor, UUID id) {
         return clienteRepository.findByIdAndCorretorId(id, corretor.value())
@@ -88,6 +96,12 @@ public class Carteira {
     @Transactional(readOnly = true)
     public Page<Imovel> imoveis(CorretorId corretor, Pageable pageable) {
         return imovelRepository.findAllByCorretorId(corretor.value(), Ordenacao.restrita(pageable, ORDENACAO_IMOVEIS));
+    }
+
+    // Sem paginação: só para a Exportação da Carteira, que entrega tudo de uma vez
+    @Transactional(readOnly = true)
+    public List<Imovel> todosOsImoveis(CorretorId corretor) {
+        return imovelRepository.findAllByCorretorId(corretor.value(), Sort.by(Sort.Direction.DESC, "criadoEm").and(Sort.by("id")));
     }
 
     @Transactional(readOnly = true)

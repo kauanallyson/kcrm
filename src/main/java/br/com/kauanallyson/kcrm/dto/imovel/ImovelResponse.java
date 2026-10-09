@@ -1,6 +1,7 @@
 package br.com.kauanallyson.kcrm.dto.imovel;
 
 import br.com.kauanallyson.kcrm.dto.common.EnderecoResponse;
+import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.imovel.Imovel;
 import br.com.kauanallyson.kcrm.model.imovel.Proprietario;
 import br.com.kauanallyson.kcrm.model.imovel.Situacao;
@@ -44,6 +45,12 @@ public record ImovelResponse(
         static ProprietarioResponse from(Proprietario proprietario) {
             return new ProprietarioResponse(proprietario.nome(), proprietario.whatsapp().value(),
                     proprietario.email().value(), proprietario.cpf().value());
+        }
+
+        @Override
+        public String toString() {
+            return "ProprietarioResponse[nome=" + nome + ", whatsapp=" + whatsapp + ", email=" + email
+                    + ", cpf=" + Cpf.mascarar(cpf) + "]";
         }
     }
 }
