@@ -1,6 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
-import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
+import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.dto.cliente.ClienteRequest;
 import br.com.kauanallyson.kcrm.exception.ClienteNaoEncontradoException;
 import br.com.kauanallyson.kcrm.model.cliente.Cliente;
@@ -24,19 +24,19 @@ public class ClienteService {
     }
 
     @Transactional
-    public Cliente cadastrar(ClienteRequest request, AuthenticatedUser corretor) {
+    public Cliente cadastrar(ClienteRequest request, CorretorId corretor) {
         return clienteRepository.save(Cliente.cadastrar(request.toDados(),
-                corretorRepository.getReferenceById(corretor.id())));
+                corretorRepository.getReferenceById(corretor.value())));
     }
 
     @Transactional(readOnly = true)
-    public List<Cliente> listar(AuthenticatedUser corretor) {
-        return clienteRepository.findAllByCorretorIdOrderByNomeAsc(corretor.id());
+    public List<Cliente> listar(CorretorId corretor) {
+        return clienteRepository.findAllByCorretorIdOrderByNomeAsc(corretor.value());
     }
 
     @Transactional(readOnly = true)
-    public Cliente buscarPorId(UUID id, AuthenticatedUser corretor) {
-        return clienteRepository.findByIdAndCorretorId(id, corretor.id())
+    public Cliente buscarPorId(UUID id, CorretorId corretor) {
+        return clienteRepository.findByIdAndCorretorId(id, corretor.value())
                 .orElseThrow(() -> new ClienteNaoEncontradoException(id));
     }
 
@@ -44,7 +44,7 @@ public class ClienteService {
     public Cliente atualizar(
             UUID id,
             ClienteRequest request,
-            AuthenticatedUser corretor
+            CorretorId corretor
     ) {
         Cliente cliente = buscarPorId(id, corretor);
         cliente.atualizarDados(request.toDados());
@@ -52,7 +52,7 @@ public class ClienteService {
     }
 
     @Transactional
-    public void apagar(UUID id, AuthenticatedUser corretor) {
+    public void apagar(UUID id, CorretorId corretor) {
         clienteRepository.delete(buscarPorId(id, corretor));
     }
 }

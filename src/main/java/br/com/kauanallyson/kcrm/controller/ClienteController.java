@@ -1,6 +1,6 @@
 package br.com.kauanallyson.kcrm.controller;
 
-import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
+import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.dto.cliente.ClienteRequest;
 import br.com.kauanallyson.kcrm.dto.cliente.ClienteResponse;
 import br.com.kauanallyson.kcrm.service.ClienteService;
@@ -25,21 +25,21 @@ public class ClienteController {
     @PostMapping
     public ResponseEntity<ClienteResponse> cadastrar(
             @RequestBody @Valid ClienteRequest request,
-            @AuthenticationPrincipal AuthenticatedUser corretor
+            @AuthenticationPrincipal CorretorId corretor
     ) {
         ClienteResponse response = ClienteResponse.from(clienteService.cadastrar(request, corretor));
         return ResponseEntity.created(URI.create("/api/clientes/" + response.id())).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<ClienteResponse>> listar(@AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<List<ClienteResponse>> listar(@AuthenticationPrincipal CorretorId corretor) {
         return ResponseEntity.ok(clienteService.listar(corretor).stream().map(ClienteResponse::from).toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteResponse> buscarPorId(
             @PathVariable UUID id,
-            @AuthenticationPrincipal AuthenticatedUser corretor
+            @AuthenticationPrincipal CorretorId corretor
     ) {
         return ResponseEntity.ok(ClienteResponse.from(clienteService.buscarPorId(id, corretor)));
     }
@@ -48,13 +48,13 @@ public class ClienteController {
     public ResponseEntity<ClienteResponse> atualizar(
             @PathVariable UUID id,
             @RequestBody @Valid ClienteRequest request,
-            @AuthenticationPrincipal AuthenticatedUser corretor
+            @AuthenticationPrincipal CorretorId corretor
     ) {
         return ResponseEntity.ok(ClienteResponse.from(clienteService.atualizar(id, request, corretor)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> apagar(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<Void> apagar(@PathVariable UUID id, @AuthenticationPrincipal CorretorId corretor) {
         clienteService.apagar(id, corretor);
         return ResponseEntity.noContent().build();
     }

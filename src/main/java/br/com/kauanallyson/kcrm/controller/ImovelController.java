@@ -1,6 +1,6 @@
 package br.com.kauanallyson.kcrm.controller;
 
-import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
+import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.dto.imovel.ImovelRequest;
 import br.com.kauanallyson.kcrm.dto.imovel.ImovelResponse;
 import br.com.kauanallyson.kcrm.service.ImovelService;
@@ -25,21 +25,21 @@ public class ImovelController {
     @PostMapping
     public ResponseEntity<ImovelResponse> cadastrar(
             @RequestBody @Valid ImovelRequest request,
-            @AuthenticationPrincipal AuthenticatedUser corretor
+            @AuthenticationPrincipal CorretorId corretor
     ) {
         ImovelResponse response = ImovelResponse.from(imovelService.cadastrar(request, corretor));
         return ResponseEntity.created(URI.create("/api/imoveis/" + response.id())).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<ImovelResponse>> listar(@AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<List<ImovelResponse>> listar(@AuthenticationPrincipal CorretorId corretor) {
         return ResponseEntity.ok(imovelService.listar(corretor).stream().map(ImovelResponse::from).toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ImovelResponse> buscarPorId(
             @PathVariable UUID id,
-            @AuthenticationPrincipal AuthenticatedUser corretor
+            @AuthenticationPrincipal CorretorId corretor
     ) {
         return ResponseEntity.ok(ImovelResponse.from(imovelService.buscarPorId(id, corretor)));
     }
@@ -48,7 +48,7 @@ public class ImovelController {
     public ResponseEntity<ImovelResponse> atualizar(
             @PathVariable UUID id,
             @RequestBody @Valid ImovelRequest request,
-            @AuthenticationPrincipal AuthenticatedUser corretor
+            @AuthenticationPrincipal CorretorId corretor
     ) {
         return ResponseEntity.ok(ImovelResponse.from(imovelService.atualizar(id, request, corretor)));
     }
@@ -57,13 +57,13 @@ public class ImovelController {
     @PostMapping("/{id}/venda")
     public ResponseEntity<ImovelResponse> marcarVendido(
             @PathVariable UUID id,
-            @AuthenticationPrincipal AuthenticatedUser corretor
+            @AuthenticationPrincipal CorretorId corretor
     ) {
         return ResponseEntity.ok(ImovelResponse.from(imovelService.marcarVendido(id, corretor)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> apagar(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<Void> apagar(@PathVariable UUID id, @AuthenticationPrincipal CorretorId corretor) {
         imovelService.apagar(id, corretor);
         return ResponseEntity.noContent().build();
     }

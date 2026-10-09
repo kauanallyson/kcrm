@@ -1,10 +1,10 @@
 package br.com.kauanallyson.kcrm.controller;
 
-import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
 import br.com.kauanallyson.kcrm.dto.auth.LoginRequest;
 import br.com.kauanallyson.kcrm.dto.auth.TokenResponse;
 import br.com.kauanallyson.kcrm.dto.corretor.CadastroCorretorRequest;
 import br.com.kauanallyson.kcrm.dto.corretor.CorretorResponse;
+import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.service.AuthService;
 import br.com.kauanallyson.kcrm.service.CorretorService;
 import jakarta.validation.Valid;
@@ -40,7 +40,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<CorretorResponse> me(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return ResponseEntity.ok(CorretorResponse.from(corretorService.buscarPorId(principal.id())));
+    public ResponseEntity<CorretorResponse> me(@AuthenticationPrincipal CorretorId corretor) {
+        return ResponseEntity.ok(CorretorResponse.from(corretorService.buscarPorId(corretor.value())));
     }
 }

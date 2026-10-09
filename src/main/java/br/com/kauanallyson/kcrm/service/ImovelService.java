@@ -1,6 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
-import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
+import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.dto.imovel.ImovelRequest;
 import br.com.kauanallyson.kcrm.exception.ImovelNaoEncontradoException;
 import br.com.kauanallyson.kcrm.model.imovel.Imovel;
@@ -24,19 +24,19 @@ public class ImovelService {
     }
 
     @Transactional
-    public Imovel cadastrar(ImovelRequest request, AuthenticatedUser corretor) {
+    public Imovel cadastrar(ImovelRequest request, CorretorId corretor) {
         return imovelRepository.save(Imovel.cadastrar(request.toDados(),
-                corretorRepository.getReferenceById(corretor.id())));
+                corretorRepository.getReferenceById(corretor.value())));
     }
 
     @Transactional(readOnly = true)
-    public List<Imovel> listar(AuthenticatedUser corretor) {
-        return imovelRepository.findAllByCorretorIdOrderByCriadoEmDesc(corretor.id());
+    public List<Imovel> listar(CorretorId corretor) {
+        return imovelRepository.findAllByCorretorIdOrderByCriadoEmDesc(corretor.value());
     }
 
     @Transactional(readOnly = true)
-    public Imovel buscarPorId(UUID id, AuthenticatedUser corretor) {
-        return imovelRepository.findByIdAndCorretorId(id, corretor.id())
+    public Imovel buscarPorId(UUID id, CorretorId corretor) {
+        return imovelRepository.findByIdAndCorretorId(id, corretor.value())
                 .orElseThrow(() -> new ImovelNaoEncontradoException(id));
     }
 
@@ -44,7 +44,7 @@ public class ImovelService {
     public Imovel atualizar(
             UUID id,
             ImovelRequest request,
-            AuthenticatedUser corretor
+            CorretorId corretor
     ) {
         Imovel imovel = buscarPorId(id, corretor);
         imovel.atualizarDados(request.toDados());
@@ -52,7 +52,7 @@ public class ImovelService {
     }
 
     @Transactional
-    public Imovel marcarVendido(UUID id, AuthenticatedUser corretor) {
+    public Imovel marcarVendido(UUID id, CorretorId corretor) {
         Imovel imovel = buscarPorId(id, corretor);
         imovel.marcarVendido();
         return imovel;
@@ -60,7 +60,7 @@ public class ImovelService {
 
     // Pode apagar a qualquer momento, inclusive Vendido, para desfazer um cadastro ou venda feitos por engano
     @Transactional
-    public void apagar(UUID id, AuthenticatedUser corretor) {
+    public void apagar(UUID id, CorretorId corretor) {
         imovelRepository.delete(buscarPorId(id, corretor));
     }
 }

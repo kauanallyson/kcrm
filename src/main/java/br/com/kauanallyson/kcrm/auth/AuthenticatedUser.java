@@ -9,15 +9,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-// Todo autenticado é um Corretor; não há papéis
+// Credenciais do Corretor usadas só no login; depois dele, o domínio recebe apenas o CorretorId
 public record AuthenticatedUser(UUID id, String email, String senhaHash) implements UserDetails {
 
     public static AuthenticatedUser from(Corretor corretor) {
         return new AuthenticatedUser(corretor.getId(), corretor.getEmail().value(), corretor.getSenhaHash().value());
-    }
-
-    public UUID getId() {
-        return id;
     }
 
     @Override
