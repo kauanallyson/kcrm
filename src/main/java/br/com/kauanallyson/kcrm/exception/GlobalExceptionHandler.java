@@ -4,8 +4,6 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -57,15 +55,6 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
     public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return Problems.of(ErrorCode.PARAMETRO_INVALIDO,
                 "Valor inválido para '" + ex.getName() + "': " + ex.getValue());
-    }
-
-    // sort por campo que não existe chega embrulhado pelo repositório
-    @ExceptionHandler({PropertyReferenceException.class, InvalidDataAccessApiUsageException.class})
-    public ProblemDetail handleOrdenacaoInvalida(Exception ex) {
-        if (ex instanceof PropertyReferenceException || ex.getCause() instanceof PropertyReferenceException) {
-            return Problems.of(ErrorCode.PARAMETRO_INVALIDO, "Campo de ordenação inválido");
-        }
-        return handleUnexpected(ex);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

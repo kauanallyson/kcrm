@@ -11,6 +11,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -192,5 +193,32 @@ class ClienteIntegrationTest {
     void ordenacaoPorCampoInexistenteEhRequisicaoInvalida() throws Exception {
         mockMvc.perform(comToken(get("/api/clientes?sort=naoExiste"), corretor))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void ordenacaoSoPorCamposLiberados() throws Exception {
+        mockMvc.perform(comToken(get("/api/clientes?sort=cpf"), corretor))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(comToken(get("/api/clientes?sort=corretor.id"), corretor))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(comToken(get("/api/clientes?sort=id"), corretor))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void empateNaOrdenacaoNaoRepeteNemPulaLinhaEntrePaginas() throws Exception {
+        List<String> cadastrados = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            cadastrados.add(cadastrarCliente(corretor, clienteJson("")).toString());
+        }
+
+        List<String> vistos = new ArrayList<>();
+        for (int pagina = 0; pagina < 3; pagina++) {
+            String resposta = mockMvc.perform(comToken(get("/api/clientes?size=3&page=" + pagina), corretor))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+            vistos.addAll(JsonPath.read(resposta, "$.conteudo[*].id"));
+        }
+        assertThat(vistos).containsExactlyInAnyOrderElementsOf(cadastrados);
     }
 }
