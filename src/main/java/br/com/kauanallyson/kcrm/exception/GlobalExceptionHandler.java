@@ -8,7 +8,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -44,11 +43,6 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler(ValorInvalidoException.class)
     public ProblemDetail handleValorInvalido(ValorInvalidoException ex) {
         return validacaoFalhou(Map.of(ex.getCampo(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(AccessDeniedException.class)
-    public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
-        return Problems.accessDenied();
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
