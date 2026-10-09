@@ -19,13 +19,21 @@ Bloqueio da conta de um Corretor por um Administrador. Vale na hora: o Corretor 
 _Evitar_: Bloqueio, banimento, desativação
 
 **Carteira**:
-Os Clientes e Imóveis de um Corretor. É o único caminho até eles: o que é de outro Corretor responde como inexistente.
+Os Clientes e Imóveis de um Corretor. É o único caminho até eles: o que é de outro Corretor responde como inexistente. O Corretor é o responsável pelos dados pessoais da sua Carteira (controlador, na LGPD); o kcrm só os guarda e processa em nome dele (operador) e não os consulta.
 _Evitar_: Portfólio, conta, workspace
+
+**Exportação da Carteira**:
+Cópia completa da Carteira que o Corretor baixa a qualquer momento, para atender um titular ou levar seus dados para outro lugar.
+_Evitar_: Backup, download, dump
+
+**Encerramento de Conta**:
+O Corretor apaga a própria conta, confirmando a senha. A Carteira inteira é apagada junto, de forma definitiva e imediata. Só o próprio Corretor encerra a conta; o Administrador apenas aplica Suspensão.
+_Evitar_: Exclusão de conta, cancelamento, desativação
 
 ### Clientes
 
 **Cliente**:
-Pessoa interessada em comprar um imóvel, atendida por um Corretor. Começa identificada apenas por nome e WhatsApp, e seus dados pessoais são completados depois. Pertence a exatamente um Corretor, que a cadastrou. Dois Clientes podem ter o mesmo WhatsApp. Todo Cliente tem uma Origem. O Corretor pode apagá-lo a qualquer momento.
+Pessoa interessada em comprar um imóvel, atendida por um Corretor. Começa identificada apenas por nome e WhatsApp, e seus dados pessoais são completados depois. Pertence a exatamente um Corretor, que a cadastrou. Dois Clientes podem ter o mesmo WhatsApp. Todo Cliente tem uma Origem. O Corretor pode apagá-lo a qualquer momento, e apagar é definitivo: não fica cópia.
 _Evitar_: Lead, contato, prospect, interessado
 
 **Origem**:
@@ -35,7 +43,7 @@ _Evitar_: Fonte, canal, lead source
 ### Imóveis
 
 **Imóvel**:
-Bem que um Corretor oferece à venda. Tem um Tipo, um endereço, um Preço de Venda, um Proprietário e uma Situação. O CRM não trata aluguel. Pertence ao Corretor que o cadastrou. O Corretor pode apagá-lo a qualquer momento, inclusive depois de Vendido (por exemplo, se foi cadastrado ou marcado por engano).
+Bem que um Corretor oferece à venda. Tem um Tipo, um endereço, um Preço de Venda, um Proprietário e uma Situação. O CRM não trata aluguel. Pertence ao Corretor que o cadastrou. O Corretor pode apagá-lo a qualquer momento, inclusive depois de Vendido (por exemplo, se foi cadastrado ou marcado por engano), e apagar é definitivo: não fica cópia.
 _Evitar_: Propriedade, unidade, produto, anúncio
 
 **Tipo**:
