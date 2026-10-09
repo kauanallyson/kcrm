@@ -1,7 +1,7 @@
 package br.com.kauanallyson.kcrm.dto.corretor;
 
-import br.com.kauanallyson.kcrm.model.common.FieldErrors;
 import br.com.kauanallyson.kcrm.model.common.Email;
+import br.com.kauanallyson.kcrm.model.common.FieldErrors;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import br.com.kauanallyson.kcrm.model.corretor.SenhaHash;
@@ -27,5 +27,4 @@ public record CadastroCorretorRequest(
         errors.throwIfAny();
         return new Corretor.Dados(nome, emailValido, creci, whatsappValido);
     }
-
 }

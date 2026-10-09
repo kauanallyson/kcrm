@@ -24,6 +24,12 @@ import java.util.stream.Collectors;
 public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    private static ProblemDetail validacaoFalhou(Map<String, String> errors) {
+        ProblemDetail problem = Problems.of(ErrorCode.VALIDACAO_FALHOU, "Falha na validação");
+        problem.setProperty("errors", errors);
+        return problem;
+    }
+
     @ExceptionHandler(DomainException.class)
     public ProblemDetail handleDomain(DomainException ex) {
         return Problems.of(ex.getCode(), ex.getMessage());
@@ -75,11 +81,5 @@ public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler
                         (first, second) -> first));
 
         return ResponseEntity.badRequest().headers(headers).body(validacaoFalhou(errors));
-    }
-
-    private static ProblemDetail validacaoFalhou(Map<String, String> errors) {
-        ProblemDetail problem = Problems.of(ErrorCode.VALIDACAO_FALHOU, "Falha na validação");
-        problem.setProperty("errors", errors);
-        return problem;
     }
 }
