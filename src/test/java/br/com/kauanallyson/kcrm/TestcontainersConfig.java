@@ -35,6 +35,11 @@ public class TestcontainersConfig {
         };
     }
 
+    @Bean
+    DynamicPropertyRegistrar smtp() {
+        return registry -> registry.add("spring.mail.port", TestEmail::porta);
+    }
+
     // Todos os testes saem do mesmo IP; o limite de produção derrubaria a suíte
     @Bean
     DynamicPropertyRegistrar rateLimitFolgado() {

@@ -47,6 +47,10 @@ public class Corretor {
     @Column(nullable = false)
     private boolean suspenso;
 
+    // Até a Confirmação de E-mail, o Corretor não consegue entrar
+    @Column(nullable = false)
+    private boolean emailConfirmado;
+
     @CreationTimestamp
     private OffsetDateTime criadoEm;
 
@@ -89,6 +93,10 @@ public class Corretor {
 
     public void reativar() {
         suspenso = false;
+    }
+
+    public void confirmarEmail() {
+        emailConfirmado = true;
     }
 
     public record Dados(

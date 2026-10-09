@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -17,25 +18,39 @@ public class CorretorService {
     private final CorretorRepository corretorRepository;
     private final AdministradorRepository administradorRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ConfirmacaoDeEmailService confirmacaoDeEmail;
 
     public CorretorService(
             CorretorRepository corretorRepository,
             AdministradorRepository administradorRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            ConfirmacaoDeEmailService confirmacaoDeEmail
     ) {
+        this.confirmacaoDeEmail = confirmacaoDeEmail;
         this.corretorRepository = corretorRepository;
         this.administradorRepository = administradorRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    // Com e-mail de conta não confirmada, só reenvia o link (sem mudar os dados dela) e devolve vazio
     @Transactional
-    public Corretor cadastrar(CadastroCorretorRequest request) {
+    public Optional<Corretor> cadastrar(CadastroCorretorRequest request) {
         Corretor.Dados dados = request.toDados();
         // O e-mail do Administrador também está tomado: o login não teria como distinguir os dois
-        if (corretorRepository.existsByEmail(dados.email()) || administradorRepository.existsByEmail(dados.email())) {
+        if (administradorRepository.existsByEmail(dados.email())) {
             throw new CorretorJaExisteException();
         }
-        return corretorRepository.save(Corretor.cadastrar(dados, request.senha(), passwordEncoder));
+        Optional<Corretor> existente = corretorRepository.findByEmail(dados.email());
+        if (existente.isPresent()) {
+            if (existente.get().isEmailConfirmado()) {
+                throw new CorretorJaExisteException();
+            }
+            confirmacaoDeEmail.enviarLink(existente.get());
+            return Optional.empty();
+        }
+        Corretor corretor = corretorRepository.save(Corretor.cadastrar(dados, request.senha(), passwordEncoder));
+        confirmacaoDeEmail.enviarLink(corretor);
+        return Optional.of(corretor);
     }
 
     @Transactional(readOnly = true)

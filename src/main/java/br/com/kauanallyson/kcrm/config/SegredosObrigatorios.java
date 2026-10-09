@@ -10,7 +10,8 @@ import java.util.List;
 // O Spring passaria "${DB_PASSWORD}" literal ao banco se a variável faltasse; aqui o startup cai antes,
 // dizendo quais faltam. Em dev elas vêm do application-dev.properties, em prod do ambiente
 public class SegredosObrigatorios implements EnvironmentPostProcessor, Ordered {
-    private static final List<String> SEGREDOS = List.of("DB_USERNAME", "DB_PASSWORD");
+    private static final List<String> SEGREDOS = List.of("DB_USERNAME", "DB_PASSWORD",
+            "SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "EMAIL_REMETENTE", "CONFIRMACAO_URL_BASE");
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
