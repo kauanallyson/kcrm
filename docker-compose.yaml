@@ -29,6 +29,39 @@ services:
       timeout: 5s
       retries: 10
 
+  kcrm:
+    build: .
+    image: kcrm:local
+    container_name: kcrm-app
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-kcrm}
+      DB_USERNAME: ${DB_USERNAME:-kcrm}
+      DB_PASSWORD: ${DB_PASSWORD:-kcrm}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env (openssl rand -base64 32)}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-1h}
+      RATE_LIMIT_AUTH: ${RATE_LIMIT_AUTH:-10}
+      RATE_LIMIT_API: ${RATE_LIMIT_API:-100}
+      MANAGEMENT_PORT: 8081
+    # Sem portas no host: o tráfego público entra pelo Traefik e o management fica só na rede interna
+    mem_limit: 768m
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health/readiness"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
+
   traefik:
     image: traefik:v3.5
     container_name: kcrm-traefik
@@ -48,8 +81,6 @@ services:
       - "8088:8080"
     volumes:
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   prometheus:
     image: prom/prometheus:v3.5.0
@@ -59,8 +90,6 @@ services:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   grafana:
     image: grafana/grafana:12.1.0

@@ -1,0 +1,13 @@
+target/
+.git/
+.github/
+.idea/
+.vscode/
+*.iml
+.env
+.env.*
+docker-compose*.yaml
+traefik/
+monitoring/
+docs/
+*.md

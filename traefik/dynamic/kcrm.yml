@@ -1,4 +1,4 @@
-# A aplicação roda no host; para escalar, adicione uma entrada em servers por instância.
+# A aplicação roda no serviço kcrm do compose; para escalar, adicione uma entrada em servers por instância.
 # O rate limit fica no Redis, então todas as instâncias dividem o mesmo contador.
 http:
   routers:
@@ -11,7 +11,7 @@ http:
     kcrm:
       loadBalancer:
         servers:
-          - url: http://host.docker.internal:8080
+          - url: http://kcrm:8080
         healthCheck:
           # Pela porta de management, que fica fora do roteamento público
           path: /actuator/health/readiness
