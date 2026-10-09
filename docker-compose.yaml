@@ -29,6 +29,28 @@ services:
       timeout: 5s
       retries: 10
 
+  traefik:
+    image: traefik:v3.5
+    container_name: kcrm-traefik
+    restart: unless-stopped
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.metrics.address=:8082
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --metrics.prometheus=true
+      - --metrics.prometheus.entrypoint=metrics
+    ports:
+      - "80:80"
+      # Dashboard do Traefik
+      - "8088:8080"
+    volumes:
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   prometheus:
     image: prom/prometheus:v3.5.0
     container_name: kcrm-prometheus

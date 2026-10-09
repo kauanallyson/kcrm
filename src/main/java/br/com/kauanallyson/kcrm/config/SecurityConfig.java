@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AuthPaths.PUBLIC.toArray(String[]::new)).permitAll()
                         .requestMatchers("/error").permitAll()
+                        // Liberado só porque a porta de management não é exposta pelo Traefik
                         .requestMatchers("/actuator/health/**", "/actuator/prometheus").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
