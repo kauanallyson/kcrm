@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -q package -DskipTests \
     && java -Djarmode=tools -jar target/kcrm-*.jar extract --layers --launcher --destination extracted
 
 # Runtime: só a JRE, sem código-fonte nem Maven
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S kcrm && adduser -S kcrm -G kcrm
 WORKDIR /app
 COPY --from=build /build/extracted/dependencies/ ./
