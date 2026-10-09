@@ -10,6 +10,10 @@ CRM pessoal do Corretor de imóveis: cada Corretor cadastra seus Clientes e os I
 Corretor de imóveis que usa o CRM. Qualquer corretor pode criar a própria conta, informando nome, e-mail, senha, CRECI e WhatsApp; o CRECI é apenas informativo e não é verificado. Só vê os seus Clientes e Imóveis; Corretores não compartilham nada entre si.
 _Evitar_: Usuário, agente, vendedor, broker, realtor, conta
 
+**Confirmação de E-mail**:
+Passo que torna a conta de um Corretor utilizável: ele abre o link enviado ao e-mail cadastrado, válido por 1 hora e uma única vez. Até confirmar, não consegue entrar; pode pedir um novo link. A conta nunca confirmada é apagada após 7 dias, liberando o e-mail.
+_Evitar_: Verificação, ativação, validação de conta
+
 **Administrador**:
 Quem opera a plataforma; existe um único. Lista os Corretores e pode suspendê-los ou reativá-los. Não é um Corretor e não tem Carteira, e nunca vê a Carteira de nenhum Corretor.
 _Evitar_: Admin, operador, suporte, superusuário
