@@ -4,7 +4,6 @@ import br.com.kauanallyson.kcrm.auth.AuthenticatedUser;
 import br.com.kauanallyson.kcrm.auth.JwtService;
 import br.com.kauanallyson.kcrm.dto.auth.LoginRequest;
 import br.com.kauanallyson.kcrm.dto.auth.TokenResponse;
-import br.com.kauanallyson.kcrm.exception.ContaSuspensaException;
 import br.com.kauanallyson.kcrm.exception.CredenciaisInvalidasException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,11 +23,7 @@ public class AuthService {
 
     public TokenResponse login(LoginRequest request) {
         AuthenticatedUser usuario = authenticate(request);
-        // Só depois da senha certa: a quem não a sabe, a Suspensão não é revelada
-        if (usuario.suspenso()) {
-            throw new ContaSuspensaException();
-        }
-        return jwtService.issue(usuario.id(), usuario.papel());
+        return jwtService.issue(usuario.id());
     }
 
     private AuthenticatedUser authenticate(LoginRequest request) {
