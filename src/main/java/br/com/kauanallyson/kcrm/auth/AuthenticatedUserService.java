@@ -1,7 +1,6 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.exception.ContaSuspensaException;
-import br.com.kauanallyson.kcrm.exception.EmailNaoConfirmadoException;
 import br.com.kauanallyson.kcrm.model.administrador.AdministradorId;
 import br.com.kauanallyson.kcrm.model.common.Email;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
@@ -59,9 +58,6 @@ public class AuthenticatedUserService implements UserDetailsService {
     private static CorretorId ativo(Corretor corretor) {
         if (corretor.isSuspenso()) {
             throw new ContaSuspensaException();
-        }
-        if (!corretor.isEmailConfirmado()) {
-            throw new EmailNaoConfirmadoException();
         }
         return new CorretorId(corretor.getId());
     }

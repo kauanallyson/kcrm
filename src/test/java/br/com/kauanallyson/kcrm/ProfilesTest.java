@@ -26,9 +26,7 @@ class ProfilesTest {
         assertThatThrownBy(() -> app.run("--spring.profiles.active=prod"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("DB_USERNAME")
-                .hasMessageContaining("DB_PASSWORD")
-                .hasMessageContaining("SMTP_PASSWORD")
-                .hasMessageContaining("CONFIRMACAO_URL_BASE");
+                .hasMessageContaining("DB_PASSWORD");
     }
 
     @Test
@@ -36,8 +34,6 @@ class ProfilesTest {
         assertThat(propriedades("application-dev")).containsKeys("DB_USERNAME", "DB_PASSWORD");
         assertThat(propriedades("application-prod")).doesNotContainKeys("DB_USERNAME", "DB_PASSWORD");
         assertThat(propriedades("application")).doesNotContainKeys("DB_USERNAME", "DB_PASSWORD");
-        assertThat(propriedades("application-dev")).containsKeys("SMTP_HOST", "SMTP_PASSWORD", "CONFIRMACAO_URL_BASE");
-        assertThat(propriedades("application-prod")).doesNotContainKeys("SMTP_HOST", "SMTP_PASSWORD", "CONFIRMACAO_URL_BASE");
     }
 
     @Test

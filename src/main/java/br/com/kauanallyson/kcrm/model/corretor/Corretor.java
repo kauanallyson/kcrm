@@ -47,10 +47,6 @@ public class Corretor {
     @Column(nullable = false)
     private boolean suspenso;
 
-    // Até a Confirmação de E-mail, o Corretor não consegue entrar
-    @Column(nullable = false)
-    private boolean emailConfirmado;
-
     @CreationTimestamp
     private OffsetDateTime criadoEm;
 
@@ -65,15 +61,6 @@ public class Corretor {
         Corretor corretor = new Corretor();
         corretor.preencher(dados, senha, encoder);
         return corretor;
-    }
-
-    // Cadastro repetido com o e-mail de uma conta ainda não confirmada: vale o mais recente, senha inclusive.
-    // Quem cadastrou antes não fica com a conta só por ter chegado primeiro a um e-mail que não é dele
-    public void recadastrar(Dados dados, String senha, PasswordEncoder encoder) {
-        if (emailConfirmado) {
-            throw new IllegalStateException("Corretor com e-mail confirmado não é recadastrado");
-        }
-        preencher(dados, senha, encoder);
     }
 
     private void preencher(Dados dados, String senha, PasswordEncoder encoder) {
@@ -106,10 +93,6 @@ public class Corretor {
 
     public void reativar() {
         suspenso = false;
-    }
-
-    public void confirmarEmail() {
-        emailConfirmado = true;
     }
 
     public record Dados(
