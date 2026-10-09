@@ -25,8 +25,7 @@ public class JwtService {
     private final SecretKey key;
     private final Duration expiration;
 
-    public JwtService(@Value("${jwt.secret}") String secret,
-                      @Value("${jwt.expiration}") Duration expiration) {
+    public JwtService(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") Duration expiration) {
         this.key = toKey(secret);
         this.expiration = expiration;
     }
@@ -43,10 +42,10 @@ public class JwtService {
         }
     }
 
-    public TokenResponse issue(UUID usuarioId) {
+    public TokenResponse issue(UUID corretorId) {
         Date now = new Date();
         String token = Jwts.builder()
-                .subject(usuarioId.toString())
+                .subject(corretorId.toString())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expiration.toMillis()))
                 .signWith(key, ALGORITHM)

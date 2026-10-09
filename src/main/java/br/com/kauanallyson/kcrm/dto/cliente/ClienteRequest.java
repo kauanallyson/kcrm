@@ -9,27 +9,21 @@ import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
-import java.util.UUID;
-
-// corretorId só vale no cadastro feito pelo Admin; na edição é rejeitado (a troca é por Transferência)
 public record ClienteRequest(
-        @NotBlank(message = "O nome não pode ficar em branco")
         String nome,
         String whatsapp,
-        @NotNull(message = "A origem não pode ficar em branco")
         Origem origem,
         String indicadoPor,
         String cpf,
         String email,
-        EnderecoRequest endereco,
-        UUID corretorId
+        EnderecoRequest endereco
 ) {
-    // Formatos são validados pelos próprios tipos de valor; cpf, email e endereco são opcionais
+    // Obrigatórios e formatos voltam todos juntos; cpf, email e endereco são opcionais
     public Cliente.Dados toDados() {
         FieldErrors errors = new FieldErrors();
+        errors.exigir("nome", nome, "O nome não pode ficar em branco");
+        errors.exigir("origem", origem, "A origem não pode ficar em branco");
         Telefone whatsappValido = errors.collect(() -> whatsapp(whatsapp));
         Cpf cpfValido = cpf == null || cpf.isBlank() ? null : errors.collect(() -> new Cpf(cpf));
         Email emailValido = email == null || email.isBlank() ? null : errors.collect(() -> new Email(email));

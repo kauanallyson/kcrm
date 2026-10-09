@@ -6,8 +6,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EnderecoTest {
-    private static Endereco endereco(String rua, String numero, String complemento, String bairro, String cidade,
-                                     String estado, String cep) {
+    private static Endereco endereco(
+            String rua,
+            String numero,
+            String complemento,
+            String bairro,
+            String cidade,
+            String estado,
+            String cep
+    ) {
         return Endereco.de(rua, numero, complemento, bairro, cidade, estado, cep);
     }
 

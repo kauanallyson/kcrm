@@ -8,7 +8,11 @@ final class Strings {
     }
 
     // Rejects null and blank; returns the value stripped
-    static String requireText(String value, String field, String message) {
+    static String requireText(
+            String value,
+            String field,
+            String message
+    ) {
         if (value == null || value.isBlank()) {
             throw new ValorInvalidoException(field, message);
         }
@@ -17,7 +21,12 @@ final class Strings {
 
     // Rejects any character that is neither a digit nor in allowedMask, instead of dropping it silently;
     // returns only the digits
-    static String requireDigits(String value, String allowedMask, String field, String message) {
+    static String requireDigits(
+            String value,
+            String allowedMask,
+            String field,
+            String message
+    ) {
         for (char c : value.toCharArray()) {
             if (!Character.isDigit(c) && allowedMask.indexOf(c) < 0) {
                 throw new ValorInvalidoException(field, message);

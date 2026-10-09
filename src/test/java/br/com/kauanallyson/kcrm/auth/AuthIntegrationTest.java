@@ -3,7 +3,7 @@ package br.com.kauanallyson.kcrm.auth;
 import br.com.kauanallyson.kcrm.TestApi;
 import br.com.kauanallyson.kcrm.TestcontainersConfig;
 import br.com.kauanallyson.kcrm.model.common.Email;
-import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
+import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ class AuthIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private CorretorRepository corretorRepository;
 
     private TestApi api;
 
@@ -39,23 +39,47 @@ class AuthIntegrationTest {
     }
 
     @Test
-    void adminInicialEhCriadoNaSubidaComSenhaEmHash() {
-        var admin = usuarioRepository.findByEmail(new Email(ADMIN_EMAIL)).orElseThrow();
+    void cadastroPublicoCriaCorretorComSenhaEmHash() throws Exception {
+        String email = randomEmail();
 
-        assertThat(admin.getPerfil().name()).isEqualTo("ADMIN");
-        assertThat(admin.getSenhaHash().value()).startsWith("{bcrypt}").doesNotContain(ADMIN_SENHA);
+        mockMvc.perform(json(post("/api/auth/cadastro"), corretorJson(email)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.creci").value("CRECI-CE 1234"))
+                .andExpect(jsonPath("$.whatsapp").value("(88) 99999-0000"))
+                .andExpect(jsonPath("$.senha").doesNotExist());
+
+        var corretor = corretorRepository.findByEmail(new Email(email)).orElseThrow();
+        assertThat(corretor.getSenhaHash().value()).startsWith("{bcrypt}").doesNotContain(SENHA);
     }
 
     @Test
-    void cadastroPublicoNaoExisteMais() throws Exception {
-        mockMvc.perform(json(post("/api/auth/register"), usuarioJson(randomEmail(), randomCpf())))
-                .andExpect(status().isUnauthorized());
+    void cadastroComEmailRepetidoEhConflito() throws Exception {
+        String email = randomEmail();
+        api.cadastrar(email);
+
+        mockMvc.perform(json(post("/api/auth/cadastro"), corretorJson(email)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("CORRETOR_JA_EXISTE"));
+    }
+
+    @Test
+    void cadastroComCamposInvalidosRetornaErrosPorCampo() throws Exception {
+        String body = """
+                {"nome":"Test","email":"x","senha":"curta","creci":" ","whatsapp":"123"}
+                """;
+        mockMvc.perform(json(post("/api/auth/cadastro"), body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.senha").exists())
+                .andExpect(jsonPath("$.errors.creci").exists())
+                .andExpect(jsonPath("$.errors.email").exists())
+                .andExpect(jsonPath("$.errors.whatsapp").exists());
     }
 
     @Test
     void loginComCredenciaisValidasRetornaToken() throws Exception {
         String email = randomEmail();
-        api.cadastrar(email, "CORRETOR");
+        api.cadastrar(email);
 
         mockMvc.perform(json(post("/api/auth/login"), loginJson(email, SENHA)))
                 .andExpect(status().isOk())
@@ -66,7 +90,7 @@ class AuthIntegrationTest {
     @Test
     void loginComSenhaErradaOuEmailDesconhecidoEhNaoAutorizadoComMesmaMensagem() throws Exception {
         String email = randomEmail();
-        api.cadastrar(email, "CORRETOR");
+        api.cadastrar(email);
 
         mockMvc.perform(json(post("/api/auth/login"), loginJson(email, "senhaerrada123")))
                 .andExpect(status().isUnauthorized())
@@ -77,17 +101,15 @@ class AuthIntegrationTest {
     }
 
     @Test
-    void meRetornaOUsuarioLogado() throws Exception {
+    void meRetornaOCorretorLogado() throws Exception {
         String email = randomEmail();
-        UUID id = api.cadastrar(email, "CORRETOR");
+        UUID id = api.cadastrar(email);
         String token = api.login(email, SENHA);
 
         mockMvc.perform(comToken(get("/api/auth/me"), token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()))
                 .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.perfil").value("CORRETOR"))
-                .andExpect(jsonPath("$.ativo").value(true))
                 .andExpect(jsonPath("$.senha").doesNotExist());
     }
 
@@ -99,15 +121,8 @@ class AuthIntegrationTest {
     }
 
     @Test
-    void rotaProtegidaSemTokenEhNaoAutorizada() throws Exception {
-        mockMvc.perform(get("/api/usuarios/" + UUID.randomUUID()))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("NAO_AUTENTICADO"));
-    }
-
-    @Test
     void rotaProtegidaComTokenInvalidoEhNaoAutorizada() throws Exception {
-        mockMvc.perform(get("/api/usuarios/" + UUID.randomUUID()).header("Authorization", "Bearer abc.def.ghi"))
+        mockMvc.perform(get("/api/clientes").header("Authorization", "Bearer abc.def.ghi"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -120,7 +135,7 @@ class AuthIntegrationTest {
 
     @Test
     void idInvalidoEhRequisicaoInvalida() throws Exception {
-        mockMvc.perform(comToken(get("/api/usuarios/not-a-uuid"), api.loginAdminInicial()))
+        mockMvc.perform(comToken(get("/api/clientes/not-a-uuid"), api.novoCorretor()))
                 .andExpect(status().isBadRequest());
     }
 }

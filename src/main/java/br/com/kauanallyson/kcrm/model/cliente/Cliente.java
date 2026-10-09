@@ -1,14 +1,11 @@
 package br.com.kauanallyson.kcrm.model.cliente;
 
-import br.com.kauanallyson.kcrm.exception.CorretorInvalidoException;
-import br.com.kauanallyson.kcrm.exception.TransferenciaParaOMesmoCorretorException;
 import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
 import br.com.kauanallyson.kcrm.model.common.Cpf;
 import br.com.kauanallyson.kcrm.model.common.Email;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.common.Telefone;
-import br.com.kauanallyson.kcrm.model.usuario.Perfil;
-import br.com.kauanallyson.kcrm.model.usuario.Usuario;
+import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -20,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-// Pessoa atendida pela imobiliária; nunca é apagada. CPF, e-mail e endereço são coletados ao longo do Atendimento
+// Pessoa interessada em comprar um imóvel. CPF, e-mail e endereço são completados depois
 @Entity
 @Table(name = "clientes", indexes = @Index(name = "idx_clientes_corretor", columnList = "corretor_id"))
 @Getter
@@ -49,7 +46,7 @@ public class Cliente {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "corretor_id", nullable = false)
-    private Usuario corretor;
+    private Corretor corretor;
 
     @Column(length = 14)
     private Cpf cpf;
@@ -75,8 +72,7 @@ public class Cliente {
     @UpdateTimestamp
     private OffsetDateTime atualizadoEm;
 
-    public static Cliente cadastrar(Dados dados, Usuario corretor) {
-        exigirCorretorAtivo(corretor);
+    public static Cliente cadastrar(Dados dados, Corretor corretor) {
         Cliente cliente = new Cliente();
         cliente.atualizarDados(dados);
         cliente.corretor = corretor;
@@ -100,23 +96,6 @@ public class Cliente {
         this.cpf = dados.cpf();
         this.email = dados.email();
         this.endereco = dados.endereco();
-    }
-
-    // Retorna o Corretor anterior, para a Transferência entrar no Histórico
-    public Usuario transferir(Usuario novo) {
-        exigirCorretorAtivo(novo);
-        if (novo == corretor || (novo.getId() != null && novo.getId().equals(corretor.getId()))) {
-            throw new TransferenciaParaOMesmoCorretorException();
-        }
-        Usuario anterior = corretor;
-        this.corretor = novo;
-        return anterior;
-    }
-
-    private static void exigirCorretorAtivo(Usuario usuario) {
-        if (usuario == null || !usuario.isAtivo() || usuario.getPerfil() != Perfil.CORRETOR) {
-            throw new CorretorInvalidoException();
-        }
     }
 
     // Obrigatório só na Indicação; normalizado como nome próprio: "joão DA silva" vira "João da Silva"
@@ -147,7 +126,14 @@ public class Cliente {
         return String.join(" ", normalizadas);
     }
 
-    public record Dados(String nome, Telefone whatsapp, Origem origem, String indicadoPor,
-                        Cpf cpf, Email email, Endereco endereco) {
+    public record Dados(
+            String nome,
+            Telefone whatsapp,
+            Origem origem,
+            String indicadoPor,
+            Cpf cpf,
+            Email email,
+            Endereco endereco
+    ) {
     }
 }
