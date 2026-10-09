@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v5
 
       # Falha só em CRITICAL com correção disponível; o resto aparece no relatório
-      - uses: aquasecurity/trivy-action@0.33.1
+      - uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: fs
           scan-ref: .
