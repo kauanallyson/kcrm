@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
+import br.com.kauanallyson.kcrm.auditoria.Auditoria;
 import br.com.kauanallyson.kcrm.exception.ClienteNaoEncontradoException;
 import br.com.kauanallyson.kcrm.exception.ImovelNaoEncontradoException;
 import br.com.kauanallyson.kcrm.model.cliente.Cliente;
@@ -20,12 +21,15 @@ public class Carteira {
     private final ClienteRepository clienteRepository;
     private final ImovelRepository imovelRepository;
     private final CorretorRepository corretorRepository;
+    private final Auditoria auditoria;
 
     public Carteira(
             ClienteRepository clienteRepository,
             ImovelRepository imovelRepository,
-            CorretorRepository corretorRepository
+            CorretorRepository corretorRepository,
+            Auditoria auditoria
     ) {
+        this.auditoria = auditoria;
         this.clienteRepository = clienteRepository;
         this.imovelRepository = imovelRepository;
         this.corretorRepository = corretorRepository;
@@ -33,7 +37,9 @@ public class Carteira {
 
     @Transactional
     public Cliente cadastrarCliente(CorretorId corretor, Cliente.Dados dados) {
-        return clienteRepository.save(Cliente.cadastrar(dados, corretorRepository.getReferenceById(corretor.value())));
+        Cliente cliente = clienteRepository.save(Cliente.cadastrar(dados, corretorRepository.getReferenceById(corretor.value())));
+        auditoria.registrar("cliente.criado", corretor.value(), cliente.getId());
+        return cliente;
     }
 
     @Transactional(readOnly = true)
@@ -55,17 +61,21 @@ public class Carteira {
     ) {
         Cliente cliente = cliente(corretor, id);
         cliente.atualizarDados(dados);
+        auditoria.registrar("cliente.alterado", corretor.value(), id);
         return cliente;
     }
 
     @Transactional
     public void apagarCliente(CorretorId corretor, UUID id) {
         clienteRepository.delete(cliente(corretor, id));
+        auditoria.registrar("cliente.apagado", corretor.value(), id);
     }
 
     @Transactional
     public Imovel cadastrarImovel(CorretorId corretor, Imovel.Dados dados) {
-        return imovelRepository.save(Imovel.cadastrar(dados, corretorRepository.getReferenceById(corretor.value())));
+        Imovel imovel = imovelRepository.save(Imovel.cadastrar(dados, corretorRepository.getReferenceById(corretor.value())));
+        auditoria.registrar("imovel.criado", corretor.value(), imovel.getId());
+        return imovel;
     }
 
     @Transactional(readOnly = true)
@@ -87,6 +97,7 @@ public class Carteira {
     ) {
         Imovel imovel = imovel(corretor, id);
         imovel.atualizarDados(dados);
+        auditoria.registrar("imovel.alterado", corretor.value(), id);
         return imovel;
     }
 
@@ -94,6 +105,7 @@ public class Carteira {
     public Imovel marcarVendido(CorretorId corretor, UUID id) {
         Imovel imovel = imovel(corretor, id);
         imovel.marcarVendido();
+        auditoria.registrar("imovel.vendido", corretor.value(), id);
         return imovel;
     }
 
@@ -101,5 +113,6 @@ public class Carteira {
     @Transactional
     public void apagarImovel(CorretorId corretor, UUID id) {
         imovelRepository.delete(imovel(corretor, id));
+        auditoria.registrar("imovel.apagado", corretor.value(), id);
     }
 }
