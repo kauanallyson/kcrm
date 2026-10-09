@@ -12,20 +12,16 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// Atalhos para os testes de integração falarem com a API como Admin ou Corretor
+// Atalhos para os testes de integração falarem com a API como um Corretor
 public final class TestApi {
-    public static final String ADMIN_EMAIL = "admin-inicial@test.com";
-    public static final String ADMIN_SENHA = "admin12345";
     public static final String SENHA = "senha12345";
+    public static final String ENDERECO_PADRAO =
+            "{\"rua\":\"Rua A\",\"numero\":\"1\",\"bairro\":\"Centro\",\"cidade\":\"Sobral\",\"estado\":\"CE\",\"cep\":\"62010000\"}";
 
     private final MockMvc mockMvc;
 
     public TestApi(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
-    }
-
-    public String loginAdminInicial() throws Exception {
-        return login(ADMIN_EMAIL, ADMIN_SENHA);
     }
 
     public String login(String email, String senha) throws Exception {
@@ -35,13 +31,19 @@ public final class TestApi {
         return JsonPath.read(body, "$.token");
     }
 
-    // Cadastra pelo Admin inicial e devolve o id
-    public UUID cadastrar(String email, String perfil) throws Exception {
-        String body = perform(json(post("/api/usuarios"), cadastroJson(email, randomCpf(), perfil))
-                .header("Authorization", bearer(loginAdminInicial())))
+    // Cadastra um Corretor pelo auto-cadastro e devolve o id
+    public UUID cadastrar(String email) throws Exception {
+        String body = perform(json(post("/api/auth/cadastro"), corretorJson(email)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return UUID.fromString(JsonPath.read(body, "$.id"));
+    }
+
+    // Cadastra um Corretor novo e devolve o token dele
+    public String novoCorretor() throws Exception {
+        String email = randomEmail();
+        cadastrar(email);
+        return login(email, SENHA);
     }
 
     public ResultActions perform(MockHttpServletRequestBuilder request) throws Exception {
@@ -61,13 +63,10 @@ public final class TestApi {
     }
 
     public static String randomEmail() {
-        return "usuario-" + UUID.randomUUID() + "@test.com";
+        return "corretor-" + UUID.randomUUID() + "@test.com";
     }
 
-    // Gera um CPF com dígitos verificadores válidos para passar na validação @CPF
-    public static final String ENDERECO_PADRAO =
-            "{\"rua\":\"Rua A\",\"numero\":\"1\",\"bairro\":\"Centro\",\"cidade\":\"Sobral\",\"estado\":\"CE\",\"cep\":\"62010000\"}";
-
+    // Gera um CPF com dígitos verificadores válidos
     public static String randomCpf() {
         int[] d = new int[11];
         for (int i = 0; i < 9; i++) {
@@ -88,16 +87,10 @@ public final class TestApi {
         return cpf.toString();
     }
 
-    public static String usuarioJson(String email, String cpf) {
+    public static String corretorJson(String email) {
         return """
-                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"88999990000","endereco":{"rua":"Rua A","numero":"1","bairro":"Centro","cidade":"Sobral","estado":"CE","cep":"62010000"}}
-                """.formatted(cpf, email, SENHA);
-    }
-
-    public static String cadastroJson(String email, String cpf, String perfil) {
-        return """
-                {"nome":"Test","cpf":"%s","email":"%s","senha":"%s","telefone":"88999990000","endereco":{"rua":"Rua A","numero":"1","bairro":"Centro","cidade":"Sobral","estado":"CE","cep":"62010000"},"perfil":"%s"}
-                """.formatted(cpf, email, SENHA, perfil);
+                {"nome":"Test","email":"%s","senha":"%s","creci":"CRECI-CE 1234","whatsapp":"88999990000"}
+                """.formatted(email, SENHA);
     }
 
     public static String loginJson(String email, String senha) {

@@ -13,8 +13,6 @@ public record ClienteResponse(
         String whatsapp,
         Origem origem,
         String indicadoPor,
-        UUID corretorId,
-        String corretorNome,
         String cpf,
         String email,
         EnderecoResponse endereco,
@@ -24,7 +22,6 @@ public record ClienteResponse(
     public static ClienteResponse from(Cliente cliente) {
         return new ClienteResponse(cliente.getId(), cliente.getNome(), cliente.getWhatsapp().value(),
                 cliente.getOrigem(), cliente.getIndicadoPor(),
-                cliente.getCorretor().getId(), cliente.getCorretor().getNome(),
                 cliente.getCpf() == null ? null : cliente.getCpf().value(),
                 cliente.getEmail() == null ? null : cliente.getEmail().value(),
                 cliente.getEndereco() == null ? null : EnderecoResponse.from(cliente.getEndereco()),

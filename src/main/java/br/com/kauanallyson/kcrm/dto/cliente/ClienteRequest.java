@@ -12,9 +12,6 @@ import br.com.kauanallyson.kcrm.model.common.Telefone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.UUID;
-
-// corretorId só vale no cadastro feito pelo Admin; na edição é rejeitado (a troca é por Transferência)
 public record ClienteRequest(
         @NotBlank(message = "O nome não pode ficar em branco")
         String nome,
@@ -24,8 +21,7 @@ public record ClienteRequest(
         String indicadoPor,
         String cpf,
         String email,
-        EnderecoRequest endereco,
-        UUID corretorId
+        EnderecoRequest endereco
 ) {
     // Formatos são validados pelos próprios tipos de valor; cpf, email e endereco são opcionais
     public Cliente.Dados toDados() {

@@ -1,4 +1,4 @@
-package br.com.kauanallyson.kcrm.model.usuario;
+package br.com.kauanallyson.kcrm.model.corretor;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

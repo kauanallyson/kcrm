@@ -1,4 +1,4 @@
-package br.com.kauanallyson.kcrm.model.usuario;
+package br.com.kauanallyson.kcrm.model.corretor;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;

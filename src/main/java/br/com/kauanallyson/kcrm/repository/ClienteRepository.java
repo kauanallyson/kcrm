@@ -10,8 +10,6 @@ import java.util.UUID;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, UUID> {
-    List<Cliente> findAllByOrderByNomeAsc();
-
     List<Cliente> findAllByCorretorIdOrderByNomeAsc(UUID corretorId);
 
     Optional<Cliente> findByIdAndCorretorId(UUID id, UUID corretorId);

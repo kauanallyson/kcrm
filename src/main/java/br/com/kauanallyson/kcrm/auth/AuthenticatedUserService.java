@@ -1,8 +1,8 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.model.common.Email;
-import br.com.kauanallyson.kcrm.model.usuario.Usuario;
-import br.com.kauanallyson.kcrm.repository.UsuarioRepository;
+import br.com.kauanallyson.kcrm.model.corretor.Corretor;
+import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import lombok.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,10 +15,10 @@ import java.util.UUID;
 @Service
 public class AuthenticatedUserService implements UserDetailsService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final CorretorRepository corretorRepository;
 
-    public AuthenticatedUserService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public AuthenticatedUserService(CorretorRepository corretorRepository) {
+        this.corretorRepository = corretorRepository;
     }
 
     @Override
@@ -28,17 +28,16 @@ public class AuthenticatedUserService implements UserDetailsService {
         try {
             valido = new Email(email);
         } catch (IllegalArgumentException e) {
-            throw new UsernameNotFoundException("Usuário não encontrado");
+            throw new UsernameNotFoundException("Corretor não encontrado");
         }
-        return usuarioRepository.findByEmail(valido)
+        return corretorRepository.findByEmail(valido)
                 .map(AuthenticatedUser::from)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException("Corretor não encontrado"));
     }
 
     public Optional<AuthenticatedUser> loadById(UUID id) {
-        // Recarregado a cada requisição: um token de Usuário desativado deixa de valer na hora
-        return usuarioRepository.findById(id)
-                .filter(Usuario::isAtivo)
+        // Recarregado a cada requisição: o token de um Corretor que não existe mais deixa de valer
+        return corretorRepository.findById(id)
                 .map(AuthenticatedUser::from);
     }
 }

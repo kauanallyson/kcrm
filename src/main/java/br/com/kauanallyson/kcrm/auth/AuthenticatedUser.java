@@ -1,21 +1,19 @@
 package br.com.kauanallyson.kcrm.auth;
 
-import br.com.kauanallyson.kcrm.model.usuario.Perfil;
-import br.com.kauanallyson.kcrm.model.usuario.Usuario;
+import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import lombok.NonNull;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public record AuthenticatedUser(UUID id, String email, String senhaHash, Perfil perfil, boolean ativo) implements UserDetails {
+// Todo autenticado é um Corretor; não há papéis
+public record AuthenticatedUser(UUID id, String email, String senhaHash) implements UserDetails {
 
-    public static AuthenticatedUser from(Usuario usuario) {
-        return new AuthenticatedUser(usuario.getId(), usuario.getEmail().value(), usuario.getSenhaHash().value(),
-                usuario.getPerfil(), usuario.isAtivo());
+    public static AuthenticatedUser from(Corretor corretor) {
+        return new AuthenticatedUser(corretor.getId(), corretor.getEmail().value(), corretor.getSenhaHash().value());
     }
 
     public UUID getId() {
@@ -25,13 +23,7 @@ public record AuthenticatedUser(UUID id, String email, String senhaHash, Perfil 
     @Override
     @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + perfil.name()));
-    }
-
-    // Um Usuário desativado não passa no login (DaoAuthenticationProvider checa isEnabled)
-    @Override
-    public boolean isEnabled() {
-        return ativo;
+        return List.of();
     }
 
     @Override

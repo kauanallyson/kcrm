@@ -1,4 +1,4 @@
-package br.com.kauanallyson.kcrm.model.usuario;
+package br.com.kauanallyson.kcrm.model.corretor;
 
 import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
 import org.springframework.security.crypto.password.PasswordEncoder;

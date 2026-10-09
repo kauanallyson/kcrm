@@ -43,10 +43,10 @@ public class JwtService {
         }
     }
 
-    public TokenResponse issue(UUID usuarioId) {
+    public TokenResponse issue(UUID corretorId) {
         Date now = new Date();
         String token = Jwts.builder()
-                .subject(usuarioId.toString())
+                .subject(corretorId.toString())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expiration.toMillis()))
                 .signWith(key, ALGORITHM)

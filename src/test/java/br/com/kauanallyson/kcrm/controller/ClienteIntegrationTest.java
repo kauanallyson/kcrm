@@ -28,17 +28,12 @@ class ClienteIntegrationTest {
     private MockMvc mockMvc;
 
     private TestApi api;
-    private String admin;
-    private UUID corretorId;
     private String corretor;
 
     @BeforeEach
     void setUp() throws Exception {
         api = new TestApi(mockMvc);
-        admin = api.loginAdminInicial();
-        String email = randomEmail();
-        corretorId = api.cadastrar(email, "CORRETOR");
-        corretor = api.login(email, SENHA);
+        corretor = api.novoCorretor();
     }
 
     private static String clienteJson(String extra) {
@@ -54,55 +49,15 @@ class ClienteIntegrationTest {
         return UUID.fromString(JsonPath.read(resposta, "$.id"));
     }
 
-    private String outroCorretor() throws Exception {
-        String email = randomEmail();
-        api.cadastrar(email, "CORRETOR");
-        return api.login(email, SENHA);
-    }
-
     @Test
     void corretorCadastraClienteEPassaAAtendeLo() throws Exception {
         mockMvc.perform(comToken(json(post("/api/clientes"),
                         clienteJson(",\"origem\":\"INDICACAO\",\"indicadoPor\":\"joão DA silva\"")), corretor))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.corretorId").value(corretorId.toString()))
                 .andExpect(jsonPath("$.whatsapp").value("(88) 99999-1111"))
                 .andExpect(jsonPath("$.indicadoPor").value("João da Silva"))
                 .andExpect(jsonPath("$.cpf").isEmpty())
                 .andExpect(jsonPath("$.endereco").isEmpty());
-    }
-
-    @Test
-    void corretorNaoEscolheOCorretor() throws Exception {
-        UUID outro = api.cadastrar(randomEmail(), "CORRETOR");
-
-        mockMvc.perform(comToken(json(post("/api/clientes"), clienteJson(",\"corretorId\":\"" + outro + "\"")), corretor))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.corretorId").exists());
-    }
-
-    @Test
-    void adminCadastraClienteComCorretorId() throws Exception {
-        mockMvc.perform(comToken(json(post("/api/clientes"), clienteJson(",\"corretorId\":\"" + corretorId + "\"")), admin))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.corretorId").value(corretorId.toString()));
-    }
-
-    @Test
-    void adminSemCorretorIdRecebe400() throws Exception {
-        mockMvc.perform(comToken(json(post("/api/clientes"), clienteJson("")), admin))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("VALIDACAO_FALHOU"))
-                .andExpect(jsonPath("$.errors.corretorId").exists());
-    }
-
-    @Test
-    void adminNaoCadastraClienteParaOutroAdmin() throws Exception {
-        UUID outroAdmin = api.cadastrar(randomEmail(), "ADMIN");
-
-        mockMvc.perform(comToken(json(post("/api/clientes"), clienteJson(",\"corretorId\":\"" + outroAdmin + "\"")), admin))
-                .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.code").value("CORRETOR_INVALIDO"));
     }
 
     @Test
@@ -134,14 +89,12 @@ class ClienteIntegrationTest {
 
     @Test
     void corretorNaoVeNemEditaClienteDeOutroCorretor() throws Exception {
-        UUID id = cadastrarCliente(outroCorretor(), clienteJson(""));
+        UUID id = cadastrarCliente(api.novoCorretor(), clienteJson(""));
 
         mockMvc.perform(comToken(get("/api/clientes/" + id), corretor))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("CLIENTE_NAO_ENCONTRADO"));
         mockMvc.perform(comToken(json(put("/api/clientes/" + id), clienteJson("")), corretor))
-                .andExpect(status().isNotFound());
-        mockMvc.perform(comToken(get("/api/clientes/" + id + "/historico"), corretor))
                 .andExpect(status().isNotFound());
     }
 
@@ -160,87 +113,26 @@ class ClienteIntegrationTest {
     }
 
     @Test
-    void listaMostraAoCorretorSoOsSeusEAoAdminTodos() throws Exception {
+    void listaMostraAoCorretorSoOsSeus() throws Exception {
         UUID meu = cadastrarCliente(corretor, clienteJson(""));
-        UUID alheio = cadastrarCliente(outroCorretor(), clienteJson(""));
+        cadastrarCliente(api.novoCorretor(), clienteJson(""));
 
-        String doCorretor = mockMvc.perform(comToken(get("/api/clientes"), corretor))
+        String resposta = mockMvc.perform(comToken(get("/api/clientes"), corretor))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        List<String> idsDoCorretor = JsonPath.read(doCorretor, "$[*].id");
-        assertThat(idsDoCorretor).containsExactly(meu.toString());
-
-        String doAdmin = mockMvc.perform(comToken(get("/api/clientes"), admin))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        List<String> idsDoAdmin = JsonPath.read(doAdmin, "$[*].id");
-        assertThat(idsDoAdmin).contains(meu.toString(), alheio.toString());
+        List<String> ids = JsonPath.read(resposta, "$[*].id");
+        assertThat(ids).containsExactly(meu.toString());
     }
 
     @Test
-    void adminTransfereClienteEOEventoEhRegistrado() throws Exception {
-        UUID id = cadastrarCliente(corretor, clienteJson(""));
-        String novoEmail = randomEmail();
-        UUID novoId = api.cadastrar(novoEmail, "CORRETOR");
+    void corretorApagaOProprioClienteMasNaoODeOutro() throws Exception {
+        UUID meu = cadastrarCliente(corretor, clienteJson(""));
+        UUID alheio = cadastrarCliente(api.novoCorretor(), clienteJson(""));
 
-        mockMvc.perform(comToken(json(post("/api/clientes/" + id + "/transferencia"),
-                        "{\"corretorId\":\"" + novoId + "\",\"motivo\":\"Férias\"}"), admin))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.corretorId").value(novoId.toString()));
-
-        mockMvc.perform(comToken(get("/api/clientes/" + id + "/historico"), admin))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].tipo").value("TRANSFERENCIA"))
-                .andExpect(jsonPath("$[0].motivo").value("Férias"))
-                .andExpect(jsonPath("$[0].detalhe").value("Test -> Test"))
-                .andExpect(jsonPath("$[0].autorNome").value("Admin Inicial"));
-
-        // O Corretor anterior deixa de ver o Cliente; o novo passa a ver, com o Histórico
-        mockMvc.perform(comToken(get("/api/clientes/" + id), corretor)).andExpect(status().isNotFound());
-        mockMvc.perform(comToken(get("/api/clientes/" + id + "/historico"), api.login(novoEmail, SENHA)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].tipo").value("TRANSFERENCIA"));
-    }
-
-    @Test
-    void corretorRecebe403NaTransferencia() throws Exception {
-        UUID id = cadastrarCliente(corretor, clienteJson(""));
-        UUID outro = api.cadastrar(randomEmail(), "CORRETOR");
-
-        mockMvc.perform(comToken(json(post("/api/clientes/" + id + "/transferencia"),
-                        "{\"corretorId\":\"" + outro + "\"}"), corretor))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void transferenciaParaUsuarioDesativadoOuAdminEhRejeitada() throws Exception {
-        UUID id = cadastrarCliente(corretor, clienteJson(""));
-        UUID desativado = api.cadastrar(randomEmail(), "CORRETOR");
-        mockMvc.perform(comToken(json(post("/api/usuarios/" + desativado + "/desativacao"), "{\"motivo\":\"saiu\"}"), admin))
-                .andExpect(status().isOk());
-        UUID outroAdmin = api.cadastrar(randomEmail(), "ADMIN");
-
-        for (UUID alvo : List.of(desativado, outroAdmin)) {
-            mockMvc.perform(comToken(json(post("/api/clientes/" + id + "/transferencia"),
-                            "{\"corretorId\":\"" + alvo + "\"}"), admin))
-                    .andExpect(status().isUnprocessableContent())
-                    .andExpect(jsonPath("$.code").value("CORRETOR_INVALIDO"));
-        }
-    }
-
-    @Test
-    void transferenciaParaOMesmoCorretorEhConflito() throws Exception {
-        UUID id = cadastrarCliente(corretor, clienteJson(""));
-
-        mockMvc.perform(comToken(json(post("/api/clientes/" + id + "/transferencia"),
-                        "{\"corretorId\":\"" + corretorId + "\"}"), admin))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("TRANSFERENCIA_PARA_O_MESMO_CORRETOR"));
-    }
-
-    @Test
-    void clienteNaoPodeSerApagado() throws Exception {
-        UUID id = cadastrarCliente(corretor, clienteJson(""));
-
-        mockMvc.perform(comToken(delete("/api/clientes/" + id), admin))
-                .andExpect(result -> assertThat(result.getResponse().getStatus()).isIn(404, 405));
+        mockMvc.perform(comToken(delete("/api/clientes/" + alheio), corretor))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(comToken(delete("/api/clientes/" + meu), corretor))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(comToken(get("/api/clientes/" + meu), corretor))
+                .andExpect(status().isNotFound());
     }
 }
