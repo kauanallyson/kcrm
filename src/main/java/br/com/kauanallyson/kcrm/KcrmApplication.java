@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class KcrmApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(KcrmApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(KcrmApplication.class, args);
+    }
 
 }

@@ -14,6 +14,15 @@ public record CadastroCorretorRequest(
         String creci,
         String whatsapp
 ) {
+    // O WhatsApp é um Telefone, mas o erro precisa voltar no campo do JSON
+    private static Telefone whatsapp(String valor) {
+        try {
+            return new Telefone(valor);
+        } catch (ValorInvalidoException e) {
+            throw new ValorInvalidoException("whatsapp", e.getMessage());
+        }
+    }
+
     // Obrigatórios, senha e formatos voltam todos juntos, com as mesmas mensagens do domínio
     public Corretor.Dados toDados() {
         FieldErrors errors = new FieldErrors();
@@ -27,14 +36,5 @@ public record CadastroCorretorRequest(
         Telefone whatsappValido = errors.collect(() -> whatsapp(whatsapp));
         errors.throwIfAny();
         return new Corretor.Dados(nome, emailValido, creci, whatsappValido);
-    }
-
-    // O WhatsApp é um Telefone, mas o erro precisa voltar no campo do JSON
-    private static Telefone whatsapp(String valor) {
-        try {
-            return new Telefone(valor);
-        } catch (ValorInvalidoException e) {
-            throw new ValorInvalidoException("whatsapp", e.getMessage());
-        }
     }
 }

@@ -5,7 +5,10 @@ import br.com.kauanallyson.kcrm.exception.ValorInvalidoException;
 import br.com.kauanallyson.kcrm.model.common.Endereco;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -77,6 +80,28 @@ public class Imovel {
         return imovel;
     }
 
+    private static BigDecimal medida(
+            String campo,
+            String nome,
+            BigDecimal valor
+    ) {
+        if (valor != null && valor.signum() <= 0) {
+            throw new ValorInvalidoException(campo, nome + " deve ser maior que zero");
+        }
+        return valor;
+    }
+
+    private static Integer contagem(
+            String campo,
+            String nome,
+            Integer valor
+    ) {
+        if (valor != null && valor < 0) {
+            throw new ValorInvalidoException(campo, nome + " não pode ser negativo");
+        }
+        return valor;
+    }
+
     public void atualizarDados(Dados dados) {
         exigirDisponivel();
         if (dados.tipo() == null) {
@@ -116,28 +141,6 @@ public class Imovel {
         if (situacao == Situacao.VENDIDO) {
             throw new ImovelVendidoException(id);
         }
-    }
-
-    private static BigDecimal medida(
-            String campo,
-            String nome,
-            BigDecimal valor
-    ) {
-        if (valor != null && valor.signum() <= 0) {
-            throw new ValorInvalidoException(campo, nome + " deve ser maior que zero");
-        }
-        return valor;
-    }
-
-    private static Integer contagem(
-            String campo,
-            String nome,
-            Integer valor
-    ) {
-        if (valor != null && valor < 0) {
-            throw new ValorInvalidoException(campo, nome + " não pode ser negativo");
-        }
-        return valor;
     }
 
     public record Dados(

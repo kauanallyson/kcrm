@@ -15,13 +15,6 @@ public record ProprietarioRequest(
         String email,
         String cpf
 ) {
-    public Proprietario toProprietario(FieldErrors errors) {
-        Telefone whatsappValido = errors.collect(() -> noCampo("proprietario.whatsapp", () -> new Telefone(whatsapp)));
-        Email emailValido = errors.collect(() -> noCampo("proprietario.email", () -> new Email(email)));
-        Cpf cpfValido = errors.collect(() -> noCampo("proprietario.cpf", () -> new Cpf(cpf)));
-        return errors.collect(() -> new Proprietario(nome, whatsappValido, emailValido, cpfValido));
-    }
-
     // Os tipos de valor apontam o próprio campo; aqui o erro precisa voltar no campo aninhado do JSON
     private static <T> T noCampo(String campo, Supplier<T> factory) {
         try {
@@ -29,5 +22,12 @@ public record ProprietarioRequest(
         } catch (ValorInvalidoException e) {
             throw new ValorInvalidoException(campo, e.getMessage());
         }
+    }
+
+    public Proprietario toProprietario(FieldErrors errors) {
+        Telefone whatsappValido = errors.collect(() -> noCampo("proprietario.whatsapp", () -> new Telefone(whatsapp)));
+        Email emailValido = errors.collect(() -> noCampo("proprietario.email", () -> new Email(email)));
+        Cpf cpfValido = errors.collect(() -> noCampo("proprietario.cpf", () -> new Cpf(cpf)));
+        return errors.collect(() -> new Proprietario(nome, whatsappValido, emailValido, cpfValido));
     }
 }

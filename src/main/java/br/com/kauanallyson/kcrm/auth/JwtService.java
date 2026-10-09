@@ -42,6 +42,13 @@ public class JwtService {
         }
     }
 
+    private static Optional<UUID> subjectOf(Jws<Claims> jws) {
+        if (!ALGORITHM.getId().equals(jws.getHeader().getAlgorithm())) {
+            return Optional.empty();
+        }
+        return Optional.of(UUID.fromString(jws.getPayload().getSubject()));
+    }
+
     public TokenResponse issue(UUID corretorId) {
         Date now = new Date();
         String token = Jwts.builder()
@@ -60,12 +67,5 @@ public class JwtService {
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
-    }
-
-    private static Optional<UUID> subjectOf(Jws<Claims> jws) {
-        if (!ALGORITHM.getId().equals(jws.getHeader().getAlgorithm())) {
-            return Optional.empty();
-        }
-        return Optional.of(UUID.fromString(jws.getPayload().getSubject()));
     }
 }

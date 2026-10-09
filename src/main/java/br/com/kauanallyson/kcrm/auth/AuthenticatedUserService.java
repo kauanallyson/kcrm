@@ -1,7 +1,6 @@
 package br.com.kauanallyson.kcrm.auth;
 
 import br.com.kauanallyson.kcrm.model.common.Email;
-import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import lombok.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;

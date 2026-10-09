@@ -1,10 +1,6 @@
 package br.com.kauanallyson.kcrm.config;
 
-import br.com.kauanallyson.kcrm.auth.AuthPaths;
-import br.com.kauanallyson.kcrm.auth.AuthenticatedUserService;
-import br.com.kauanallyson.kcrm.auth.JwtAuthenticationFilter;
-import br.com.kauanallyson.kcrm.auth.JwtService;
-import br.com.kauanallyson.kcrm.auth.SecurityProblemHandler;
+import br.com.kauanallyson.kcrm.auth.*;
 import br.com.kauanallyson.kcrm.ratelimit.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
