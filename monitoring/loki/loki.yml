@@ -33,9 +33,5 @@ compactor:
   delete_request_store: filesystem
 
 limits_config:
-  # 30 dias para tudo; a trilha de auditoria fica 1 ano
+  # 30 dias para tudo
   retention_period: 720h
-  retention_stream:
-    - selector: '{logger="kcrm.auditoria"}'
-      priority: 1
-      period: 8760h

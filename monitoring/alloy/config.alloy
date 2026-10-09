@@ -25,8 +25,7 @@ loki.source.docker "containers" {
   forward_to    = [loki.process.app.receiver]
 }
 
-// Logs da app em JSON (ECS, profile prod): nível vira rótulo e request id vira metadado.
-// Só o logger de auditoria vira rótulo, para ter seletor e retenção próprios sem explodir a cardinalidade
+// Logs da app em JSON (ECS, profile prod): nível vira rótulo e request id vira metadado
 loki.process "app" {
   stage.match {
     selector = "{service=\"kcrm\"}"
@@ -34,22 +33,14 @@ loki.process "app" {
     stage.json {
       expressions = {
         level      = "log.level",
-        logger     = "log.logger",
         request_id = "requestId",
       }
     }
     stage.labels {
-      values = { level = "", logger = "" }
+      values = { level = "" }
     }
     stage.structured_metadata {
       values = { request_id = "" }
-    }
-  }
-
-  stage.match {
-    selector = "{logger!=\"kcrm.auditoria\"}"
-    stage.label_drop {
-      values = ["logger"]
     }
   }
 

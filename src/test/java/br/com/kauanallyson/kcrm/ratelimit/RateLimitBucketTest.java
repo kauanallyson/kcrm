@@ -7,10 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class RateLimitBucketTest {
     @Test
-    void encerramentoDeContaConfereSenhaEFicaNoLimiteRigido() {
-        assertThat(RateLimitBucket.of(new MockHttpServletRequest("POST", "/api/conta/encerramento")))
+    void rotasPublicasDeAutenticacaoFicamNoLimiteRigido() {
+        assertThat(RateLimitBucket.of(new MockHttpServletRequest("POST", "/api/auth/login")))
                 .isEqualTo(RateLimitBucket.AUTH);
-        assertThat(RateLimitBucket.of(new MockHttpServletRequest("GET", "/api/conta/exportacao")))
+        assertThat(RateLimitBucket.of(new MockHttpServletRequest("GET", "/api/clientes")))
                 .isEqualTo(RateLimitBucket.API);
     }
 }
