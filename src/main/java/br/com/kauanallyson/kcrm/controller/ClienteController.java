@@ -4,13 +4,16 @@ import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.dto.cliente.ClienteRequest;
 import br.com.kauanallyson.kcrm.dto.cliente.ClienteResponse;
 import br.com.kauanallyson.kcrm.service.Carteira;
+import br.com.kauanallyson.kcrm.dto.common.PaginaResponse;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,9 +34,13 @@ public class ClienteController {
         return ResponseEntity.created(URI.create("/api/clientes/" + response.id())).body(response);
     }
 
+    // page, size (padrão 20, máximo 100) e sort; só a Carteira do Corretor autenticado
     @GetMapping
-    public ResponseEntity<List<ClienteResponse>> listar(@AuthenticationPrincipal CorretorId corretor) {
-        return ResponseEntity.ok(carteira.clientes(corretor).stream().map(ClienteResponse::from).toList());
+    public ResponseEntity<PaginaResponse<ClienteResponse>> listar(
+            @ParameterObject @PageableDefault(size = 20, sort = "nome") Pageable pageable,
+            @AuthenticationPrincipal CorretorId corretor
+    ) {
+        return ResponseEntity.ok(PaginaResponse.from(carteira.clientes(corretor, pageable), ClienteResponse::from));
     }
 
     @GetMapping("/{id}")

@@ -4,13 +4,17 @@ import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import br.com.kauanallyson.kcrm.dto.imovel.ImovelRequest;
 import br.com.kauanallyson.kcrm.dto.imovel.ImovelResponse;
 import br.com.kauanallyson.kcrm.service.Carteira;
+import br.com.kauanallyson.kcrm.dto.common.PaginaResponse;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,9 +35,13 @@ public class ImovelController {
         return ResponseEntity.created(URI.create("/api/imoveis/" + response.id())).body(response);
     }
 
+    // page, size (padrão 20, máximo 100) e sort; só a Carteira do Corretor autenticado
     @GetMapping
-    public ResponseEntity<List<ImovelResponse>> listar(@AuthenticationPrincipal CorretorId corretor) {
-        return ResponseEntity.ok(carteira.imoveis(corretor).stream().map(ImovelResponse::from).toList());
+    public ResponseEntity<PaginaResponse<ImovelResponse>> listar(
+            @ParameterObject @PageableDefault(size = 20, sort = "criadoEm", direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal CorretorId corretor
+    ) {
+        return ResponseEntity.ok(PaginaResponse.from(carteira.imoveis(corretor, pageable), ImovelResponse::from));
     }
 
     @GetMapping("/{id}")

@@ -154,7 +154,56 @@ class ImovelIntegrationTest {
 
         String resposta = mockMvc.perform(comToken(get("/api/imoveis"), corretor))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        List<String> ids = JsonPath.read(resposta, "$[*].id");
+        List<String> ids = JsonPath.read(resposta, "$.conteudo[*].id");
         assertThat(ids).containsExactly(meu.toString());
+    }
+
+    @Test
+    void listaPaginaComMetadados() throws Exception {
+        for (int i = 0; i < 7; i++) {
+            cadastrarImovel(corretor);
+        }
+        mockMvc.perform(comToken(get("/api/imoveis?page=1&size=5"), corretor))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.conteudo.length()").value(2))
+                .andExpect(jsonPath("$.pagina").value(1))
+                .andExpect(jsonPath("$.tamanho").value(5))
+                .andExpect(jsonPath("$.totalElementos").value(7))
+                .andExpect(jsonPath("$.totalPaginas").value(2));
+        mockMvc.perform(comToken(get("/api/imoveis?page=0&size=5"), corretor))
+                .andExpect(jsonPath("$.conteudo.length()").value(5));
+    }
+
+    @Test
+    void tamanhoPadrao20EMaximo100() throws Exception {
+        mockMvc.perform(comToken(get("/api/imoveis"), corretor))
+                .andExpect(jsonPath("$.tamanho").value(20));
+        mockMvc.perform(comToken(get("/api/imoveis?size=1000"), corretor))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tamanho").value(100));
+    }
+
+    @Test
+    void nenhumaPaginaMostraItensDeOutroCorretor() throws Exception {
+        String outro = api.novoCorretor();
+        for (int i = 0; i < 3; i++) {
+            cadastrarImovel(outro);
+        }
+        UUID meu = cadastrarImovel(corretor);
+
+        for (int pagina = 0; pagina < 4; pagina++) {
+            String resposta = mockMvc.perform(comToken(get("/api/imoveis?size=1&page=" + pagina), corretor))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.totalElementos").value(1))
+                    .andReturn().getResponse().getContentAsString();
+            List<String> ids = JsonPath.read(resposta, "$.conteudo[*].id");
+            assertThat(ids).isSubsetOf(meu.toString());
+        }
+    }
+
+    @Test
+    void ordenacaoPorCampoInexistenteEhRequisicaoInvalida() throws Exception {
+        mockMvc.perform(comToken(get("/api/imoveis?sort=naoExiste"), corretor))
+                .andExpect(status().isBadRequest());
     }
 }
