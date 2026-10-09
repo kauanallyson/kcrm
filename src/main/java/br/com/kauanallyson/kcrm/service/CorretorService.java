@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
+import br.com.kauanallyson.kcrm.auditoria.Auditoria;
 import br.com.kauanallyson.kcrm.dto.corretor.CadastroCorretorRequest;
 import br.com.kauanallyson.kcrm.exception.CorretorJaExisteException;
 import br.com.kauanallyson.kcrm.exception.CorretorNaoEncontradoException;
@@ -17,15 +18,18 @@ public class CorretorService {
     private final CorretorRepository corretorRepository;
     private final AdministradorRepository administradorRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Auditoria auditoria;
 
     public CorretorService(
             CorretorRepository corretorRepository,
             AdministradorRepository administradorRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            Auditoria auditoria
     ) {
         this.corretorRepository = corretorRepository;
         this.administradorRepository = administradorRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditoria = auditoria;
     }
 
     @Transactional
@@ -35,7 +39,9 @@ public class CorretorService {
         if (corretorRepository.existsByEmail(dados.email()) || administradorRepository.existsByEmail(dados.email())) {
             throw new CorretorJaExisteException();
         }
-        return corretorRepository.save(Corretor.cadastrar(dados, request.senha(), passwordEncoder));
+        Corretor corretor = corretorRepository.save(Corretor.cadastrar(dados, request.senha(), passwordEncoder));
+        auditoria.registrar("corretor.cadastrado", corretor.getId(), corretor.getId());
+        return corretor;
     }
 
     @Transactional(readOnly = true)

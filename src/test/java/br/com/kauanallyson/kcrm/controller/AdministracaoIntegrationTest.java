@@ -130,8 +130,8 @@ class AdministracaoIntegrationTest {
 
         mockMvc.perform(comToken(get("/api/clientes"), token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].nome").value("Maria"));
+                .andExpect(jsonPath("$.conteudo.length()").value(1))
+                .andExpect(jsonPath("$.conteudo[0].nome").value("Maria"));
     }
 
     @Test
