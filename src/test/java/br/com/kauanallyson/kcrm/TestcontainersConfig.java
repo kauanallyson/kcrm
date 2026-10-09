@@ -4,7 +4,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistrar;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @TestConfiguration(proxyBeanMethods = false)
@@ -16,24 +15,9 @@ public class TestcontainersConfig {
     }
 
     @Bean
-    @ServiceConnection(name = "redis")
-    GenericContainer<?> redis() {
-        return new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
-    }
-
-    @Bean
     DynamicPropertyRegistrar jwtSecret() {
         String secret = TestJwt.randomSecret();
         return registry -> registry.add("jwt.secret", () -> secret);
-    }
-
-    // Todos os testes saem do mesmo IP; o limite de produção derrubaria a suíte
-    @Bean
-    DynamicPropertyRegistrar rateLimitFolgado() {
-        return registry -> {
-            registry.add("kcrm.rate-limit.auth.requests", () -> 10_000);
-            registry.add("kcrm.rate-limit.api.requests", () -> 10_000);
-        };
     }
 
 }
