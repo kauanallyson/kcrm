@@ -1,6 +1,5 @@
 package br.com.kauanallyson.kcrm.service;
 
-import br.com.kauanallyson.kcrm.auditoria.Auditoria;
 import br.com.kauanallyson.kcrm.dto.corretor.CadastroCorretorRequest;
 import br.com.kauanallyson.kcrm.exception.CorretorJaExisteException;
 import br.com.kauanallyson.kcrm.exception.CorretorNaoEncontradoException;
@@ -20,20 +19,17 @@ public class CorretorService {
     private final AdministradorRepository administradorRepository;
     private final PasswordEncoder passwordEncoder;
     private final ConfirmacaoDeEmailService confirmacaoDeEmail;
-    private final Auditoria auditoria;
 
     public CorretorService(
             CorretorRepository corretorRepository,
             AdministradorRepository administradorRepository,
             PasswordEncoder passwordEncoder,
-            ConfirmacaoDeEmailService confirmacaoDeEmail,
-            Auditoria auditoria
+            ConfirmacaoDeEmailService confirmacaoDeEmail
     ) {
         this.confirmacaoDeEmail = confirmacaoDeEmail;
         this.corretorRepository = corretorRepository;
         this.administradorRepository = administradorRepository;
         this.passwordEncoder = passwordEncoder;
-        this.auditoria = auditoria;
     }
 
     // Com e-mail de conta não confirmada, troca os dados e a senha dela pelos novos, manda um link novo
@@ -51,12 +47,10 @@ public class CorretorService {
                 throw new CorretorJaExisteException();
             }
             existente.get().recadastrar(dados, request.senha(), passwordEncoder);
-            auditoria.registrar("corretor.recadastrado", existente.get().getId(), existente.get().getId());
             confirmacaoDeEmail.enviarLink(existente.get());
             return Optional.empty();
         }
         Corretor corretor = corretorRepository.save(Corretor.cadastrar(dados, request.senha(), passwordEncoder));
-        auditoria.registrar("corretor.cadastrado", corretor.getId(), corretor.getId());
         confirmacaoDeEmail.enviarLink(corretor);
         return Optional.of(corretor);
     }

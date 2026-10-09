@@ -9,8 +9,6 @@ public final class AuthPaths {
     public static final String CONFIRMACAO = "/api/auth/confirmacao";
     public static final String REENVIO_CONFIRMACAO = "/api/auth/confirmacao/reenvio";
     public static final Set<String> PUBLIC = Set.of(LOGIN, CADASTRO, CONFIRMACAO, REENVIO_CONFIRMACAO);
-    // Autenticada, mas confere a senha: um token roubado não pode testar senhas no ritmo do resto da API
-    public static final String ENCERRAMENTO_DE_CONTA = "/api/conta/encerramento";
 
     private AuthPaths() {
     }
