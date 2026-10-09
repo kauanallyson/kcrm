@@ -5,6 +5,7 @@ import br.com.kauanallyson.kcrm.dto.corretor.CadastroCorretorRequest;
 import br.com.kauanallyson.kcrm.exception.CorretorJaExisteException;
 import br.com.kauanallyson.kcrm.exception.CorretorNaoEncontradoException;
 import br.com.kauanallyson.kcrm.model.corretor.Corretor;
+import br.com.kauanallyson.kcrm.repository.AdministradorRepository;
 import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,11 +16,18 @@ import java.util.UUID;
 @Service
 public class CorretorService {
     private final CorretorRepository corretorRepository;
+    private final AdministradorRepository administradorRepository;
     private final PasswordEncoder passwordEncoder;
     private final Auditoria auditoria;
 
-    public CorretorService(CorretorRepository corretorRepository, PasswordEncoder passwordEncoder, Auditoria auditoria) {
+    public CorretorService(
+            CorretorRepository corretorRepository,
+            AdministradorRepository administradorRepository,
+            PasswordEncoder passwordEncoder,
+            Auditoria auditoria
+    ) {
         this.corretorRepository = corretorRepository;
+        this.administradorRepository = administradorRepository;
         this.passwordEncoder = passwordEncoder;
         this.auditoria = auditoria;
     }
@@ -27,7 +35,8 @@ public class CorretorService {
     @Transactional
     public Corretor cadastrar(CadastroCorretorRequest request) {
         Corretor.Dados dados = request.toDados();
-        if (corretorRepository.existsByEmail(dados.email())) {
+        // O e-mail do Administrador também está tomado: o login não teria como distinguir os dois
+        if (corretorRepository.existsByEmail(dados.email()) || administradorRepository.existsByEmail(dados.email())) {
             throw new CorretorJaExisteException();
         }
         Corretor corretor = corretorRepository.save(Corretor.cadastrar(dados, request.senha(), passwordEncoder));

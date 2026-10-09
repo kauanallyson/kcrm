@@ -1,6 +1,7 @@
 package br.com.kauanallyson.kcrm.config;
 
 import br.com.kauanallyson.kcrm.auth.*;
+import br.com.kauanallyson.kcrm.exception.ProblemResponseWriter;
 import br.com.kauanallyson.kcrm.ratelimit.RateLimitFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ public class SecurityConfig {
             JwtService jwtService,
             AuthenticatedUserService authenticatedUserService,
             SecurityProblemHandler problemHandler,
+            ProblemResponseWriter problemWriter,
             RateLimitFilter rateLimitFilter
     ) throws Exception {
         return http
@@ -44,11 +46,13 @@ public class SecurityConfig {
                         // Liberado só porque a porta de management não é exposta pelo Traefik
                         .requestMatchers("/actuator/health/**", "/actuator/prometheus").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .anyRequest().authenticated())
+                        // O Administrador só administra; todo o resto da API é do Corretor e da sua Carteira
+                        .requestMatchers("/api/administracao/**").hasRole(Papel.ADMINISTRADOR.name())
+                        .anyRequest().hasRole(Papel.CORRETOR.name()))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(problemHandler)
                         .accessDeniedHandler(problemHandler))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService, authenticatedUserService),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService, authenticatedUserService, problemWriter),
                         UsernamePasswordAuthenticationFilter.class)
                 // Barra o excesso antes de gastar uma consulta no banco resolvendo o token
                 .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
