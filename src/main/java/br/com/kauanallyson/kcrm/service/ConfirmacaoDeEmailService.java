@@ -1,5 +1,6 @@
 package br.com.kauanallyson.kcrm.service;
 
+import br.com.kauanallyson.kcrm.exception.CredenciaisInvalidasException;
 import br.com.kauanallyson.kcrm.exception.LinkDeConfirmacaoInvalidoException;
 import br.com.kauanallyson.kcrm.model.common.Email;
 import br.com.kauanallyson.kcrm.model.corretor.ConfirmacaoDeEmail;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -28,17 +30,20 @@ public class ConfirmacaoDeEmailService {
     private final ConfirmacaoDeEmailRepository confirmacaoRepository;
     private final CorretorRepository corretorRepository;
     private final EnvioDeEmail envioDeEmail;
+    private final PasswordEncoder passwordEncoder;
     private final String urlBase;
 
     public ConfirmacaoDeEmailService(
             ConfirmacaoDeEmailRepository confirmacaoRepository,
             CorretorRepository corretorRepository,
             EnvioDeEmail envioDeEmail,
+            PasswordEncoder passwordEncoder,
             @Value("${kcrm.confirmacao.url-base}") String urlBase
     ) {
         this.confirmacaoRepository = confirmacaoRepository;
         this.corretorRepository = corretorRepository;
         this.envioDeEmail = envioDeEmail;
+        this.passwordEncoder = passwordEncoder;
         this.urlBase = urlBase;
     }
 
@@ -54,7 +59,7 @@ public class ConfirmacaoDeEmailService {
         envioDeEmail.enviar(corretor.getEmail().value(), "Confirme seu e-mail no kcrm", """
                 Olá, %s!
 
-                Para começar a usar o kcrm, confirme seu e-mail abrindo o link abaixo:
+                Para começar a usar o kcrm, abra o link abaixo e confirme com a senha que você cadastrou:
 
                 %s
 
@@ -63,8 +68,10 @@ public class ConfirmacaoDeEmailService {
                 """.formatted(corretor.getNome(), link));
     }
 
+    // Pede a senha junto do link: quem abre um link não pedido não confirma a conta com a senha de outra pessoa.
+    // Senha errada não gasta o link
     @Transactional
-    public void confirmar(String token) {
+    public void confirmar(String token, String senha) {
         ConfirmacaoDeEmail confirmacao = Optional.ofNullable(token)
                 .filter(t -> !t.isBlank())
                 .flatMap(t -> confirmacaoRepository.findByTokenHash(ConfirmacaoDeEmail.hash(t)))
@@ -72,9 +79,12 @@ public class ConfirmacaoDeEmailService {
         if (confirmacao.expirada(OffsetDateTime.now())) {
             throw new LinkDeConfirmacaoInvalidoException();
         }
-        corretorRepository.findById(confirmacao.getCorretorId())
-                .orElseThrow(LinkDeConfirmacaoInvalidoException::new)
-                .confirmarEmail();
+        Corretor corretor = corretorRepository.findById(confirmacao.getCorretorId())
+                .orElseThrow(LinkDeConfirmacaoInvalidoException::new);
+        if (senha == null || !corretor.getSenhaHash().matches(senha, passwordEncoder)) {
+            throw new CredenciaisInvalidasException();
+        }
+        corretor.confirmarEmail();
         // Uso único: o link some assim que confirma
         confirmacaoRepository.delete(confirmacao);
     }

@@ -36,7 +36,8 @@ public class CorretorService {
         this.auditoria = auditoria;
     }
 
-    // Com e-mail de conta não confirmada, só reenvia o link (sem mudar os dados dela) e devolve vazio
+    // Com e-mail de conta não confirmada, troca os dados e a senha dela pelos novos, manda um link novo
+    // (o anterior deixa de valer) e devolve vazio
     @Transactional
     public Optional<Corretor> cadastrar(CadastroCorretorRequest request) {
         Corretor.Dados dados = request.toDados();
@@ -49,6 +50,8 @@ public class CorretorService {
             if (existente.get().isEmailConfirmado()) {
                 throw new CorretorJaExisteException();
             }
+            existente.get().recadastrar(dados, request.senha(), passwordEncoder);
+            auditoria.registrar("corretor.recadastrado", existente.get().getId(), existente.get().getId());
             confirmacaoDeEmail.enviarLink(existente.get());
             return Optional.empty();
         }

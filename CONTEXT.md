@@ -11,7 +11,7 @@ Corretor de imóveis que usa o CRM. Qualquer corretor pode criar a própria cont
 _Evitar_: Usuário, agente, vendedor, broker, realtor, conta
 
 **Confirmação de E-mail**:
-Passo que torna a conta de um Corretor utilizável: ele abre o link enviado ao e-mail cadastrado, válido por 1 hora e uma única vez. Até confirmar, não consegue entrar; pode pedir um novo link. A conta nunca confirmada é apagada após 7 dias, liberando o e-mail.
+Passo que torna a conta de um Corretor utilizável: ele abre o link enviado ao e-mail cadastrado, válido por 1 hora e uma única vez, e confirma com a senha do cadastro. Até confirmar, não consegue entrar; pode pedir um novo link. Um novo cadastro com o e-mail de uma conta ainda não confirmada substitui os dados e a senha dela e envia outro link. A conta nunca confirmada é apagada após 7 dias, liberando o e-mail.
 _Evitar_: Verificação, ativação, validação de conta
 
 **Administrador**:

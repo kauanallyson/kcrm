@@ -44,7 +44,7 @@ public class AuthController {
 
     @PostMapping("/confirmacao")
     public ResponseEntity<Void> confirmar(@RequestBody @Valid ConfirmacaoRequest request) {
-        confirmacaoDeEmail.confirmar(request.token());
+        confirmacaoDeEmail.confirmar(request.token(), request.senha());
         return ResponseEntity.noContent().build();
     }
 

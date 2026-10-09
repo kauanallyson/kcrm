@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import static br.com.kauanallyson.kcrm.TestApi.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -67,7 +68,7 @@ class ConfirmacaoDeEmailIntegrationTest {
         assertThat(mensagens).hasSize(1);
         assertThat(mensagens.getFirst().getSubject()).isEqualTo("Confirme seu e-mail no kcrm");
         assertThat(TestEmail.texto(mensagens.getFirst()))
-                .contains("confirme seu e-mail", "1 hora", "http://localhost:5173/confirmar-email?token=");
+                .contains("confirme com a senha", "1 hora", "http://localhost:5173/confirmar-email?token=");
         assertThat(confirmado(email)).isFalse();
     }
 
@@ -143,7 +144,7 @@ class ConfirmacaoDeEmailIntegrationTest {
     }
 
     @Test
-    void recadastroComEmailNaoConfirmadoReenviaOLink() throws Exception {
+    void recadastroComEmailNaoConfirmadoTrocaOsDadosEReenviaOLink() throws Exception {
         String email = randomEmail();
         UUID id = api.cadastrarSemConfirmar(email);
         String antigo = TestEmail.ultimoToken(email);
@@ -160,6 +161,53 @@ class ConfirmacaoDeEmailIntegrationTest {
         mockMvc.perform(json(post("/api/auth/cadastro"), corretorJson(email)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("CORRETOR_JA_EXISTE"));
+    }
+
+    // Alguém cadastra antes o e-mail de outra pessoa: o dono, ao se cadastrar, fica com a conta e a própria senha
+    @Test
+    void quemCadastrouOEmailDeOutraPessoaNaoFicaComAConta() throws Exception {
+        String email = randomEmail();
+        mockMvc.perform(json(post("/api/auth/cadastro"), corretorJson(email).replace(SENHA, "senhaDoIntruso1")))
+                .andExpect(status().isCreated());
+        String linkDoIntruso = TestEmail.ultimoToken(email);
+
+        mockMvc.perform(json(post("/api/auth/cadastro"), corretorJson(email)))
+                .andExpect(status().isAccepted());
+        api.confirmar(TestEmail.ultimoToken(email), SENHA).andExpect(status().isNoContent());
+
+        assertThat(api.login(email, SENHA)).isNotBlank();
+        mockMvc.perform(json(post("/api/auth/login"), loginJson(email, "senhaDoIntruso1")))
+                .andExpect(status().isUnauthorized());
+        api.confirmar(linkDoIntruso, "senhaDoIntruso1").andExpect(status().isBadRequest());
+    }
+
+    // O dono abre um link disparado por outra pessoa: sem a senha dela, a conta não é confirmada
+    @Test
+    void linkSoConfirmaComASenhaDoCadastro() throws Exception {
+        String email = randomEmail();
+        api.cadastrarSemConfirmar(email);
+        String token = TestEmail.ultimoToken(email);
+
+        api.confirmar(token, "outraSenha123")
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("CREDENCIAIS_INVALIDAS"));
+        assertThat(confirmado(email)).isFalse();
+
+        // Senha errada não gasta o link
+        api.confirmar(token, SENHA).andExpect(status().isNoContent());
+        assertThat(confirmado(email)).isTrue();
+    }
+
+    @Test
+    void tokenDeContaNaoConfirmadaNaoDaAcesso() throws Exception {
+        String email = randomEmail();
+        UUID id = api.cadastrar(email);
+        String token = api.login(email, SENHA);
+        jdbc.update("update corretores set email_confirmado = false where id = ?", id);
+
+        mockMvc.perform(comToken(get("/api/clientes"), token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("EMAIL_NAO_CONFIRMADO"));
     }
 
     @Test
