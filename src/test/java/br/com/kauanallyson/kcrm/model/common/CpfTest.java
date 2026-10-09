@@ -55,4 +55,9 @@ class CpfTest {
         assertThatThrownBy(() -> new Cpf("5299822472")).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Cpf("529982247250")).isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void toStringNaoExpoeONumero() {
+        assertThat(new Cpf("52998224725").toString()).doesNotContain("529").doesNotContain("725");
+    }
 }

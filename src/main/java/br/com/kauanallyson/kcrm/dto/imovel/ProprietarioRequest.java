@@ -18,4 +18,10 @@ public record ProprietarioRequest(
         Cpf cpfValido = errors.collect("proprietario.cpf", () -> new Cpf(cpf));
         return errors.collect(() -> new Proprietario(nome, whatsappValido, emailValido, cpfValido));
     }
+
+    @Override
+    public String toString() {
+        return "ProprietarioRequest[nome=" + nome + ", whatsapp=" + whatsapp + ", email=" + email
+                + ", cpf=" + Cpf.mascarar(cpf) + "]";
+    }
 }

@@ -3,6 +3,7 @@ package br.com.kauanallyson.kcrm.dto.cliente;
 import br.com.kauanallyson.kcrm.dto.common.EnderecoResponse;
 import br.com.kauanallyson.kcrm.model.cliente.Cliente;
 import br.com.kauanallyson.kcrm.model.cliente.Origem;
+import br.com.kauanallyson.kcrm.model.common.Cpf;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -26,5 +27,12 @@ public record ClienteResponse(
                 cliente.getEmail() == null ? null : cliente.getEmail().value(),
                 cliente.getEndereco() == null ? null : EnderecoResponse.from(cliente.getEndereco()),
                 cliente.getCriadoEm(), cliente.getAtualizadoEm());
+    }
+
+    @Override
+    public String toString() {
+        return "ClienteResponse[id=" + id + ", nome=" + nome + ", whatsapp=" + whatsapp + ", origem=" + origem
+                + ", indicadoPor=" + indicadoPor + ", cpf=" + Cpf.mascarar(cpf) + ", email=" + email
+                + ", endereco=" + endereco + ", criadoEm=" + criadoEm + ", atualizadoEm=" + atualizadoEm + "]";
     }
 }
