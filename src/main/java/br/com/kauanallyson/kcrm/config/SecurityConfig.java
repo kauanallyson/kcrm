@@ -2,6 +2,7 @@ package br.com.kauanallyson.kcrm.config;
 
 import br.com.kauanallyson.kcrm.auth.*;
 import br.com.kauanallyson.kcrm.ratelimit.RateLimitFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +12,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.time.Duration;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -25,6 +32,8 @@ public class SecurityConfig {
     ) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                // Usa o bean corsConfigurationSource; o preflight é respondido antes da autenticação
+                .cors(cors -> {})
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
@@ -44,6 +53,22 @@ public class SecurityConfig {
                 // Barra o excesso antes de gastar uma consulta no banco resolvendo o token
                 .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
                 .build();
+    }
+
+    // Origens exatas vindas de CORS_ALLOWED_ORIGINS; vazia não libera nenhuma. Sem cookies cross-site
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${kcrm.cors.allowed-origins:}") List<String> allowedOrigins
+    ) {
+        var config = new CorsConfiguration();
+        config.setAllowedOrigins(allowedOrigins.stream().map(String::trim).filter(o -> !o.isEmpty()).toList());
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setMaxAge(Duration.ofHours(1));
+
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     @Bean
