@@ -9,15 +9,22 @@ import br.com.kauanallyson.kcrm.model.imovel.Imovel;
 import br.com.kauanallyson.kcrm.repository.ClienteRepository;
 import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import br.com.kauanallyson.kcrm.repository.ImovelRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 // Clientes e Imóveis de um Corretor. Único caminho até eles: o de outro Corretor responde como inexistente
 @Service
 public class Carteira {
+    private static final Set<String> ORDENACAO_CLIENTES = Set.of("nome", "origem", "criadoEm", "atualizadoEm");
+    private static final Set<String> ORDENACAO_IMOVEIS = Set.of(
+            "tipo", "situacao", "precoVenda", "area", "quartos", "suites", "banheiros", "vagas",
+            "criadoEm", "atualizadoEm");
+
     private final ClienteRepository clienteRepository;
     private final ImovelRepository imovelRepository;
     private final CorretorRepository corretorRepository;
@@ -43,8 +50,8 @@ public class Carteira {
     }
 
     @Transactional(readOnly = true)
-    public List<Cliente> clientes(CorretorId corretor) {
-        return clienteRepository.findAllByCorretorIdOrderByNomeAsc(corretor.value());
+    public Page<Cliente> clientes(CorretorId corretor, Pageable pageable) {
+        return clienteRepository.findAllByCorretorId(corretor.value(), Ordenacao.restrita(pageable, ORDENACAO_CLIENTES));
     }
 
     @Transactional(readOnly = true)
@@ -79,8 +86,8 @@ public class Carteira {
     }
 
     @Transactional(readOnly = true)
-    public List<Imovel> imoveis(CorretorId corretor) {
-        return imovelRepository.findAllByCorretorIdOrderByCriadoEmDesc(corretor.value());
+    public Page<Imovel> imoveis(CorretorId corretor, Pageable pageable) {
+        return imovelRepository.findAllByCorretorId(corretor.value(), Ordenacao.restrita(pageable, ORDENACAO_IMOVEIS));
     }
 
     @Transactional(readOnly = true)
