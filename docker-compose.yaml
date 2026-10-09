@@ -105,7 +105,31 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
+      - loki
+
+  # Logs de todos os containers; sem porta no host, consultado só pelo Grafana
+  loki:
+    image: grafana/loki:3.5.3
+    container_name: kcrm-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./monitoring/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+
+  # Coletor: lê os containers pelo socket do Docker (somente leitura) e envia ao Loki
+  alloy:
+    image: grafana/alloy:v1.10.2
+    container_name: kcrm-alloy
+    restart: unless-stopped
+    command: run /etc/alloy/config.alloy --storage.path=/var/lib/alloy/data
+    volumes:
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
 
 volumes:
   postgres-data:
   grafana-data:
+  loki-data:
