@@ -12,8 +12,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// Prod exige as credenciais do banco no ambiente; a conexão de verdade vem do Testcontainers
-@SpringBootTest(properties = {"DB_USERNAME=test", "DB_PASSWORD=test"})
+// Prod exige as credenciais do banco no ambiente; a conexão de verdade vem do Testcontainers.
+// O log em JSON de prod reconfiguraria o logging da JVM inteira e quebraria quem lê o log em texto
+@SpringBootTest(properties = {"DB_USERNAME=test", "DB_PASSWORD=test", "logging.structured.format.console="})
 @AutoConfigureMockMvc
 @ActiveProfiles("prod")
 @Import(TestcontainersConfig.class)
