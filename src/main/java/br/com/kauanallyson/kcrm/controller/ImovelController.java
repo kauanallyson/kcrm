@@ -23,8 +23,10 @@ public class ImovelController {
     }
 
     @PostMapping
-    public ResponseEntity<ImovelResponse> cadastrar(@RequestBody @Valid ImovelRequest request,
-                                                    @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<ImovelResponse> cadastrar(
+            @RequestBody @Valid ImovelRequest request,
+            @AuthenticationPrincipal AuthenticatedUser corretor
+    ) {
         ImovelResponse response = ImovelResponse.from(imovelService.cadastrar(request, corretor));
         return ResponseEntity.created(URI.create("/api/imoveis/" + response.id())).body(response);
     }
@@ -35,22 +37,28 @@ public class ImovelController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ImovelResponse> buscarPorId(@PathVariable UUID id,
-                                                      @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<ImovelResponse> buscarPorId(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AuthenticatedUser corretor
+    ) {
         return ResponseEntity.ok(ImovelResponse.from(imovelService.buscarPorId(id, corretor)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ImovelResponse> atualizar(@PathVariable UUID id,
-                                                    @RequestBody @Valid ImovelRequest request,
-                                                    @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<ImovelResponse> atualizar(
+            @PathVariable UUID id,
+            @RequestBody @Valid ImovelRequest request,
+            @AuthenticationPrincipal AuthenticatedUser corretor
+    ) {
         return ResponseEntity.ok(ImovelResponse.from(imovelService.atualizar(id, request, corretor)));
     }
 
     // Vendido é definitivo: não há rota de volta a Disponível
     @PostMapping("/{id}/venda")
-    public ResponseEntity<ImovelResponse> marcarVendido(@PathVariable UUID id,
-                                                        @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<ImovelResponse> marcarVendido(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AuthenticatedUser corretor
+    ) {
         return ResponseEntity.ok(ImovelResponse.from(imovelService.marcarVendido(id, corretor)));
     }
 

@@ -46,7 +46,11 @@ public class Corretor {
     @UpdateTimestamp
     private OffsetDateTime atualizadoEm;
 
-    public static Corretor cadastrar(Dados dados, String senha, PasswordEncoder encoder) {
+    public static Corretor cadastrar(
+            Dados dados,
+            String senha,
+            PasswordEncoder encoder
+    ) {
         if (dados.nome() == null || dados.nome().isBlank()) {
             throw new ValorInvalidoException("nome", "O nome não pode ficar em branco");
         }
@@ -71,6 +75,11 @@ public class Corretor {
         return corretor;
     }
 
-    public record Dados(String nome, Email email, String creci, Telefone whatsapp) {
+    public record Dados(
+            String nome,
+            Email email,
+            String creci,
+            Telefone whatsapp
+    ) {
     }
 }

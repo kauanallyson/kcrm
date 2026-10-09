@@ -23,8 +23,10 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<ClienteResponse> cadastrar(@RequestBody @Valid ClienteRequest request,
-                                                     @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<ClienteResponse> cadastrar(
+            @RequestBody @Valid ClienteRequest request,
+            @AuthenticationPrincipal AuthenticatedUser corretor
+    ) {
         ClienteResponse response = ClienteResponse.from(clienteService.cadastrar(request, corretor));
         return ResponseEntity.created(URI.create("/api/clientes/" + response.id())).body(response);
     }
@@ -35,15 +37,19 @@ public class ClienteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClienteResponse> buscarPorId(@PathVariable UUID id,
-                                                       @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<ClienteResponse> buscarPorId(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AuthenticatedUser corretor
+    ) {
         return ResponseEntity.ok(ClienteResponse.from(clienteService.buscarPorId(id, corretor)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClienteResponse> atualizar(@PathVariable UUID id,
-                                                     @RequestBody @Valid ClienteRequest request,
-                                                     @AuthenticationPrincipal AuthenticatedUser corretor) {
+    public ResponseEntity<ClienteResponse> atualizar(
+            @PathVariable UUID id,
+            @RequestBody @Valid ClienteRequest request,
+            @AuthenticationPrincipal AuthenticatedUser corretor
+    ) {
         return ResponseEntity.ok(ClienteResponse.from(clienteService.atualizar(id, request, corretor)));
     }
 

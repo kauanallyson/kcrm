@@ -18,9 +18,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService,
-                                                   AuthenticatedUserService authenticatedUserService,
-                                                   SecurityProblemHandler problemHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtService jwtService,
+            AuthenticatedUserService authenticatedUserService,
+            SecurityProblemHandler problemHandler
+    ) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)

@@ -118,22 +118,40 @@ public class Imovel {
         }
     }
 
-    private static BigDecimal medida(String campo, String nome, BigDecimal valor) {
+    private static BigDecimal medida(
+            String campo,
+            String nome,
+            BigDecimal valor
+    ) {
         if (valor != null && valor.signum() <= 0) {
             throw new ValorInvalidoException(campo, nome + " deve ser maior que zero");
         }
         return valor;
     }
 
-    private static Integer contagem(String campo, String nome, Integer valor) {
+    private static Integer contagem(
+            String campo,
+            String nome,
+            Integer valor
+    ) {
         if (valor != null && valor < 0) {
             throw new ValorInvalidoException(campo, nome + " não pode ser negativo");
         }
         return valor;
     }
 
-    public record Dados(Tipo tipo, Endereco endereco, BigDecimal precoVenda, Proprietario proprietario,
-                        BigDecimal area, BigDecimal frente, BigDecimal fundo,
-                        Integer quartos, Integer suites, Integer banheiros, Integer vagas) {
+    public record Dados(
+            Tipo tipo,
+            Endereco endereco,
+            BigDecimal precoVenda,
+            Proprietario proprietario,
+            BigDecimal area,
+            BigDecimal frente,
+            BigDecimal fundo,
+            Integer quartos,
+            Integer suites,
+            Integer banheiros,
+            Integer vagas
+    ) {
     }
 }

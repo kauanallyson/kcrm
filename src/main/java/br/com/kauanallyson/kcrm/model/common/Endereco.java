@@ -68,8 +68,15 @@ public record Endereco(
         }
     }
 
-    public static Endereco de(String rua, String numero, String complemento, String bairro, String cidade,
-                              String estado, String cep) {
+    public static Endereco de(
+            String rua,
+            String numero,
+            String complemento,
+            String bairro,
+            String cidade,
+            String estado,
+            String cep
+    ) {
         return new Endereco(rua, numero, complemento, bairro, cidade, Uf.daSigla(estado), new Cep(cep));
     }
 }

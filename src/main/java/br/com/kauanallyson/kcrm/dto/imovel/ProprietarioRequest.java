@@ -9,7 +9,12 @@ import br.com.kauanallyson.kcrm.model.imovel.Proprietario;
 
 import java.util.function.Supplier;
 
-public record ProprietarioRequest(String nome, String whatsapp, String email, String cpf) {
+public record ProprietarioRequest(
+        String nome,
+        String whatsapp,
+        String email,
+        String cpf
+) {
     public Proprietario toProprietario(FieldErrors errors) {
         Telefone whatsappValido = errors.collect(() -> noCampo("proprietario.whatsapp", () -> new Telefone(whatsapp)));
         Email emailValido = errors.collect(() -> noCampo("proprietario.email", () -> new Email(email)));

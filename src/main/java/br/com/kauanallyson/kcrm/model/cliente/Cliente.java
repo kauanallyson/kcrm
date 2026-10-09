@@ -126,7 +126,14 @@ public class Cliente {
         return String.join(" ", normalizadas);
     }
 
-    public record Dados(String nome, Telefone whatsapp, Origem origem, String indicadoPor,
-                        Cpf cpf, Email email, Endereco endereco) {
+    public record Dados(
+            String nome,
+            Telefone whatsapp,
+            Origem origem,
+            String indicadoPor,
+            Cpf cpf,
+            Email email,
+            Endereco endereco
+    ) {
     }
 }

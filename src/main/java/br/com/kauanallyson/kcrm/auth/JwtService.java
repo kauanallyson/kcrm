@@ -25,8 +25,7 @@ public class JwtService {
     private final SecretKey key;
     private final Duration expiration;
 
-    public JwtService(@Value("${jwt.secret}") String secret,
-                      @Value("${jwt.expiration}") Duration expiration) {
+    public JwtService(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") Duration expiration) {
         this.key = toKey(secret);
         this.expiration = expiration;
     }

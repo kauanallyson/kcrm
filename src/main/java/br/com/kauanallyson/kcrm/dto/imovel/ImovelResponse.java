@@ -35,7 +35,12 @@ public record ImovelResponse(
                 imovel.getSituacao(), imovel.getCriadoEm(), imovel.getAtualizadoEm());
     }
 
-    public record ProprietarioResponse(String nome, String whatsapp, String email, String cpf) {
+    public record ProprietarioResponse(
+            String nome,
+            String whatsapp,
+            String email,
+            String cpf
+    ) {
         static ProprietarioResponse from(Proprietario proprietario) {
             return new ProprietarioResponse(proprietario.nome(), proprietario.whatsapp().value(),
                     proprietario.email().value(), proprietario.cpf().value());

@@ -41,7 +41,11 @@ public class ImovelService {
     }
 
     @Transactional
-    public Imovel atualizar(UUID id, ImovelRequest request, AuthenticatedUser corretor) {
+    public Imovel atualizar(
+            UUID id,
+            ImovelRequest request,
+            AuthenticatedUser corretor
+    ) {
         Imovel imovel = buscarPorId(id, corretor);
         imovel.atualizarDados(request.toDados());
         return imovel;

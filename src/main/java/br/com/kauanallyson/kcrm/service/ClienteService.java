@@ -41,7 +41,11 @@ public class ClienteService {
     }
 
     @Transactional
-    public Cliente atualizar(UUID id, ClienteRequest request, AuthenticatedUser corretor) {
+    public Cliente atualizar(
+            UUID id,
+            ClienteRequest request,
+            AuthenticatedUser corretor
+    ) {
         Cliente cliente = buscarPorId(id, corretor);
         cliente.atualizarDados(request.toDados());
         return cliente;
