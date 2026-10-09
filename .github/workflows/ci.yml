@@ -35,11 +35,21 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # O jar carrega as dependências efetivas (transitivas e as do BOM do Spring Boot); o pom.xml sozinho não
+      - name: Empacota o jar
+        run: ./mvnw -B -q package -DskipTests
+
       # Falha só em CRITICAL com correção disponível; o resto aparece no relatório
-      - name: Trivy
+      - name: Trivy no jar
         run: >
-          docker run --rm -v "$PWD":/src:ro aquasec/trivy:0.65.0
-          fs --scanners vuln --severity CRITICAL --ignore-unfixed --exit-code 1 /src
+          docker run --rm -v "$PWD/target":/target:ro aquasec/trivy:0.65.0
+          rootfs --scanners vuln --severity CRITICAL --ignore-unfixed --exit-code 1 /target
 
   imagem:
     name: Imagem no Docker Hub
