@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Build: compila e extrai o jar em camadas, para que dependências (que mudam pouco) fiquem em cache
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9-eclipse-temurin-26 AS build
 WORKDIR /build
 COPY pom.xml .
 RUN --mount=type=cache,target=/root/.m2 mvn -B -q dependency:go-offline
@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -q package -DskipTests \
     && java -Djarmode=tools -jar target/kcrm-*.jar extract --layers --launcher --destination extracted
 
 # Runtime: só a JRE, sem código-fonte nem Maven
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S kcrm && adduser -S kcrm -G kcrm
 WORKDIR /app
 COPY --from=build /build/extracted/dependencies/ ./
