@@ -21,6 +21,7 @@ import java.util.UUID;
 public class JwtService {
     private static final String TOKEN_TYPE = "Bearer";
     private static final MacAlgorithm ALGORITHM = Jwts.SIG.HS256;
+    private static final String PAPEL_CLAIM = "papel";
 
     private final SecretKey key;
     private final Duration expiration;
@@ -42,17 +43,20 @@ public class JwtService {
         }
     }
 
-    private static Optional<UUID> subjectOf(Jws<Claims> jws) {
+    // Token sem papel (ou com papel desconhecido) não resolve
+    private static Optional<Sujeito> sujeitoOf(Jws<Claims> jws) {
         if (!ALGORITHM.getId().equals(jws.getHeader().getAlgorithm())) {
             return Optional.empty();
         }
-        return Optional.of(UUID.fromString(jws.getPayload().getSubject()));
+        Papel papel = Papel.valueOf(jws.getPayload().get(PAPEL_CLAIM, String.class));
+        return Optional.of(new Sujeito(UUID.fromString(jws.getPayload().getSubject()), papel));
     }
 
-    public TokenResponse issue(UUID corretorId) {
+    public TokenResponse issue(UUID id, Papel papel) {
         Date now = new Date();
         String token = Jwts.builder()
-                .subject(corretorId.toString())
+                .subject(id.toString())
+                .claim(PAPEL_CLAIM, papel.name())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expiration.toMillis()))
                 .signWith(key, ALGORITHM)
@@ -60,11 +64,11 @@ public class JwtService {
         return new TokenResponse(token, TOKEN_TYPE, expiration.toSeconds());
     }
 
-    public Optional<UUID> parseSubject(String token) {
+    public Optional<Sujeito> parse(String token) {
         try {
             Jws<Claims> jws = Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
-            return subjectOf(jws);
-        } catch (JwtException | IllegalArgumentException e) {
+            return sujeitoOf(jws);
+        } catch (JwtException | IllegalArgumentException | NullPointerException e) {
             return Optional.empty();
         }
     }

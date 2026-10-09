@@ -1,6 +1,8 @@
 package br.com.kauanallyson.kcrm.auth;
 
-import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
+import br.com.kauanallyson.kcrm.exception.ContaSuspensaException;
+import br.com.kauanallyson.kcrm.exception.ProblemResponseWriter;
+import br.com.kauanallyson.kcrm.exception.Problems;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,10 +24,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AuthenticatedUserService authenticatedUserService;
+    private final ProblemResponseWriter problemWriter;
 
-    public JwtAuthenticationFilter(JwtService jwtService, AuthenticatedUserService authenticatedUserService) {
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            AuthenticatedUserService authenticatedUserService,
+            ProblemResponseWriter problemWriter
+    ) {
         this.jwtService = jwtService;
         this.authenticatedUserService = authenticatedUserService;
+        this.problemWriter = problemWriter;
     }
 
     private static Optional<String> bearerToken(HttpServletRequest request) {
@@ -37,10 +45,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .map(header -> header.substring(BEARER_PREFIX.length()));
     }
 
-    // O principal é só a identidade do Corretor; credenciais ficam no login
-    private static void authenticate(CorretorId principal, HttpServletRequest request) {
+    // O principal é só a identidade (CorretorId ou AdministradorId); credenciais ficam no login
+    private static void authenticate(Object principal, Papel papel, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
-                .authenticated(principal, null, List.of());
+                .authenticated(principal, null, List.of(papel.authority()));
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -54,11 +62,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        // Unresolvable token: continue unauthenticated, the entry point answers 401
-        bearerToken(request)
-                .flatMap(jwtService::parseSubject)
-                .flatMap(authenticatedUserService::loadById)
-                .ifPresent(principal -> authenticate(principal, request));
+        Optional<Sujeito> sujeito = bearerToken(request).flatMap(jwtService::parse);
+        if (sujeito.isPresent()) {
+            try {
+                // Unresolvable token: continue unauthenticated, the entry point answers 401
+                authenticatedUserService.principal(sujeito.get())
+                        .ifPresent(principal -> authenticate(principal, sujeito.get().papel(), request));
+            } catch (ContaSuspensaException e) {
+                problemWriter.write(request, response, Problems.of(e.getCode(), e.getMessage()));
+                return;
+            }
+        }
 
         filterChain.doFilter(request, response);
     }
