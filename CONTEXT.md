@@ -7,8 +7,16 @@ CRM pessoal do Corretor de imóveis: cada Corretor cadastra seus Clientes e os I
 ### Corretor
 
 **Corretor**:
-Corretor de imóveis que usa o CRM. Cria a própria conta informando nome, e-mail, senha, CRECI e WhatsApp, e só vê os seus Clientes e Imóveis; Corretores não compartilham nada entre si.
+Corretor de imóveis que usa o CRM. Qualquer corretor pode criar a própria conta, informando nome, e-mail, senha, CRECI e WhatsApp; o CRECI é apenas informativo e não é verificado. Só vê os seus Clientes e Imóveis; Corretores não compartilham nada entre si.
 _Evitar_: Usuário, agente, vendedor, broker, realtor, conta
+
+**Administrador**:
+Quem opera a plataforma; existe um único. Lista os Corretores e pode suspendê-los ou reativá-los. Não é um Corretor e não tem Carteira, e nunca vê a Carteira de nenhum Corretor.
+_Evitar_: Admin, operador, suporte, superusuário
+
+**Suspensão**:
+Bloqueio da conta de um Corretor por um Administrador. Vale na hora: o Corretor Suspenso perde o acesso imediatamente e não consegue entrar, mas sua Carteira fica intacta e volta a ficar acessível quando ele é reativado.
+_Evitar_: Bloqueio, banimento, desativação
 
 **Carteira**:
 Os Clientes e Imóveis de um Corretor. É o único caminho até eles: o que é de outro Corretor responde como inexistente.
