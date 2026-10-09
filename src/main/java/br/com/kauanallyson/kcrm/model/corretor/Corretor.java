@@ -43,10 +43,6 @@ public class Corretor {
     @Column(nullable = false, length = 15)
     private Telefone whatsapp;
 
-    // Suspensão pelo Administrador: bloqueia o acesso, mas a Carteira fica intacta
-    @Column(nullable = false)
-    private boolean suspenso;
-
     @CreationTimestamp
     private OffsetDateTime criadoEm;
 
@@ -84,15 +80,6 @@ public class Corretor {
         creci = dados.creci().strip().toUpperCase();
         whatsapp = dados.whatsapp();
         senhaHash = SenhaHash.encode(senha, encoder);
-    }
-
-    // Idempotentes: suspender um Suspenso ou reativar um ativo não muda nada
-    public void suspender() {
-        suspenso = true;
-    }
-
-    public void reativar() {
-        suspenso = false;
     }
 
     public record Dados(

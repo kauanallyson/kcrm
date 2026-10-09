@@ -27,14 +27,6 @@ public class TestcontainersConfig {
         return registry -> registry.add("jwt.secret", () -> secret);
     }
 
-    @Bean
-    DynamicPropertyRegistrar administrador() {
-        return registry -> {
-            registry.add("kcrm.administrador.email", () -> TestApi.ADMINISTRADOR_EMAIL);
-            registry.add("kcrm.administrador.senha", () -> TestApi.ADMINISTRADOR_SENHA);
-        };
-    }
-
     // Todos os testes saem do mesmo IP; o limite de produção derrubaria a suíte
     @Bean
     DynamicPropertyRegistrar rateLimitFolgado() {

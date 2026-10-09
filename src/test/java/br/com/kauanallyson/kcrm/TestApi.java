@@ -15,8 +15,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // Atalhos para os testes de integração falarem com a API como um Corretor
 public final class TestApi {
     public static final String SENHA = "senha12345";
-    public static final String ADMINISTRADOR_EMAIL = "administrador@kcrm.test";
-    public static final String ADMINISTRADOR_SENHA = "administrador123";
     public static final String ENDERECO_PADRAO =
             "{\"rua\":\"Rua A\",\"numero\":\"1\",\"bairro\":\"Centro\",\"cidade\":\"Sobral\",\"estado\":\"CE\",\"cep\":\"62010000\"}";
 
@@ -46,10 +44,6 @@ public final class TestApi {
         String email = randomEmail();
         cadastrar(email);
         return login(email, SENHA);
-    }
-
-    public String loginAdministrador() throws Exception {
-        return login(ADMINISTRADOR_EMAIL, ADMINISTRADOR_SENHA);
     }
 
     public ResultActions perform(MockHttpServletRequestBuilder request) throws Exception {

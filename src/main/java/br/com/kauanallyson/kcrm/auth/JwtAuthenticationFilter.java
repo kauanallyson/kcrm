@@ -1,8 +1,6 @@
 package br.com.kauanallyson.kcrm.auth;
 
-import br.com.kauanallyson.kcrm.exception.ContaSuspensaException;
-import br.com.kauanallyson.kcrm.exception.ProblemResponseWriter;
-import br.com.kauanallyson.kcrm.exception.Problems;
+import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,22 +16,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtService jwtService;
     private final AuthenticatedUserService authenticatedUserService;
-    private final ProblemResponseWriter problemWriter;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            AuthenticatedUserService authenticatedUserService,
-            ProblemResponseWriter problemWriter
+            AuthenticatedUserService authenticatedUserService
     ) {
         this.jwtService = jwtService;
         this.authenticatedUserService = authenticatedUserService;
-        this.problemWriter = problemWriter;
     }
 
     private static Optional<String> bearerToken(HttpServletRequest request) {
@@ -45,10 +41,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .map(header -> header.substring(BEARER_PREFIX.length()));
     }
 
-    // O principal é só a identidade (CorretorId ou AdministradorId); credenciais ficam no login
-    private static void authenticate(Object principal, Papel papel, HttpServletRequest request) {
+    // O principal é só a identidade (CorretorId); credenciais ficam no login
+    private static void authenticate(CorretorId principal, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
-                .authenticated(principal, null, List.of(papel.authority()));
+                .authenticated(principal, null, List.of());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -62,16 +58,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        Optional<Sujeito> sujeito = bearerToken(request).flatMap(jwtService::parse);
-        if (sujeito.isPresent()) {
-            try {
-                // Unresolvable token: continue unauthenticated, the entry point answers 401
-                authenticatedUserService.principal(sujeito.get())
-                        .ifPresent(principal -> authenticate(principal, sujeito.get().papel(), request));
-            } catch (ContaSuspensaException e) {
-                problemWriter.write(request, response, Problems.of(e.getCode(), e.getMessage()));
-                return;
-            }
+        Optional<UUID> id = bearerToken(request).flatMap(jwtService::parse);
+        if (id.isPresent()) {
+            // Unresolvable token: continue unauthenticated, the entry point answers 401
+            authenticatedUserService.principal(id.get())
+                    .ifPresent(principal -> authenticate(principal, request));
         }
 
         filterChain.doFilter(request, response);

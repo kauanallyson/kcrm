@@ -1,11 +1,7 @@
 package br.com.kauanallyson.kcrm.auth;
 
-import br.com.kauanallyson.kcrm.exception.ContaSuspensaException;
-import br.com.kauanallyson.kcrm.model.administrador.AdministradorId;
 import br.com.kauanallyson.kcrm.model.common.Email;
-import br.com.kauanallyson.kcrm.model.corretor.Corretor;
 import br.com.kauanallyson.kcrm.model.corretor.CorretorId;
-import br.com.kauanallyson.kcrm.repository.AdministradorRepository;
 import br.com.kauanallyson.kcrm.repository.CorretorRepository;
 import lombok.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,19 +10,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthenticatedUserService implements UserDetailsService {
 
     private final CorretorRepository corretorRepository;
-    private final AdministradorRepository administradorRepository;
 
-    public AuthenticatedUserService(
-            CorretorRepository corretorRepository,
-            AdministradorRepository administradorRepository
-    ) {
+    public AuthenticatedUserService(CorretorRepository corretorRepository) {
         this.corretorRepository = corretorRepository;
-        this.administradorRepository = administradorRepository;
     }
 
     @Override
@@ -38,27 +30,13 @@ public class AuthenticatedUserService implements UserDetailsService {
         } catch (IllegalArgumentException e) {
             throw new UsernameNotFoundException("Não encontrado");
         }
-        return administradorRepository.findByEmail(valido)
+        return corretorRepository.findByEmail(valido)
                 .map(AuthenticatedUser::from)
-                .or(() -> corretorRepository.findByEmail(valido).map(AuthenticatedUser::from))
                 .orElseThrow(() -> new UsernameNotFoundException("Não encontrado"));
     }
 
-    // Conferido a cada requisição: o token de quem não existe mais deixa de valer,
-    // e o de um Corretor Suspenso responde 403 na hora
-    public Optional<Object> principal(Sujeito sujeito) {
-        return switch (sujeito.papel()) {
-            case ADMINISTRADOR -> administradorRepository.existsById(sujeito.id())
-                    ? Optional.of(new AdministradorId(sujeito.id()))
-                    : Optional.empty();
-            case CORRETOR -> corretorRepository.findById(sujeito.id()).map(AuthenticatedUserService::ativo);
-        };
-    }
-
-    private static CorretorId ativo(Corretor corretor) {
-        if (corretor.isSuspenso()) {
-            throw new ContaSuspensaException();
-        }
-        return new CorretorId(corretor.getId());
+    // Conferido a cada requisição: o token de quem não existe mais deixa de valer
+    public Optional<CorretorId> principal(UUID id) {
+        return corretorRepository.findById(id).map(corretor -> new CorretorId(corretor.getId()));
     }
 }

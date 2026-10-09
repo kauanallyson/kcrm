@@ -24,24 +24,24 @@ class JwtServiceTest {
 
     @Test
     void issuedTokenParsesToItsSubject() {
-        TokenResponse response = jwtService.issue(ALICE_ID, Papel.CORRETOR);
+        TokenResponse response = jwtService.issue(ALICE_ID);
 
         assertThat(response.type()).isEqualTo("Bearer");
         assertThat(response.expiresIn()).isEqualTo(60);
-        assertThat(jwtService.parse(response.token())).contains(new Sujeito(ALICE_ID, Papel.CORRETOR));
+        assertThat(jwtService.parse(response.token())).contains(ALICE_ID);
     }
 
     @Test
     void tokenSignedWithAnotherKeyIsRejected() {
         String forged = new JwtService(OTHER_SECRET, Duration.ofMinutes(1))
-                .issue(ALICE_ID, Papel.CORRETOR).token();
+                .issue(ALICE_ID).token();
 
         assertUnresolved(forged);
     }
 
     @Test
     void tamperedTokenIsRejected() {
-        String[] parts = jwtService.issue(ALICE_ID, Papel.CORRETOR).token().split("\\.");
+        String[] parts = jwtService.issue(ALICE_ID).token().split("\\.");
         String tampered = parts[0] + "." + parts[1] + "x." + parts[2];
 
         assertUnresolved(tampered);
@@ -82,16 +82,6 @@ class JwtServiceTest {
                 .compact();
 
         assertThat(service.parse(hs512)).isEmpty();
-    }
-
-    @Test
-    void tokenSemPapelEhRejeitado() {
-        String semPapel = Jwts.builder()
-                .subject(ALICE_ID.toString())
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET)), Jwts.SIG.HS256)
-                .compact();
-
-        assertUnresolved(semPapel);
     }
 
     @Test
