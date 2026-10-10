@@ -7,7 +7,7 @@ COPY pom.xml .
 RUN --mount=type=cache,target=/root/.m2 mvn -B -q dependency:go-offline
 COPY src src
 RUN --mount=type=cache,target=/root/.m2 mvn -B -q package -DskipTests \
-    && java -Djarmode=tools -jar target/kcrm-*.jar extract --layers --launcher --destination extracted
+    && java -Djarmode=tools -jar target/kcrm-backend-*.jar extract --layers --launcher --destination extracted
 
 # Runtime: só a JRE, sem código-fonte nem Maven
 FROM eclipse-temurin:25-jre-alpine

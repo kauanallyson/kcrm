@@ -95,7 +95,7 @@ O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) roda em todo p
 
 - **Testes**: `./mvnw verify`
 - **Vulnerabilidades nas dependências**: Trivy no repositório; falha em CVE CRITICAL com correção disponível
-- **Imagem no GitHub Container Registry** (só em push na `main` ou de tag `v*`, depois dos dois anteriores): build da imagem, Trivy na imagem e push multi-arch (`linux/amd64` e `linux/arm64`) para `ghcr.io/kauanallyson/kcrm`
+- **Imagem no GitHub Container Registry** (só em push na `main` ou de tag `v*`, depois dos dois anteriores): build da imagem, Trivy na imagem e push multi-arch (`linux/amd64` e `linux/arm64`) para `ghcr.io/kauanallyson/kcrm-backend`
   - push na `main`: `latest` e `sha-<commit>`
   - tag `v1.2.3`: `1.2.3`, `1.2` e `sha-<commit>` (o `latest` continua apontando para a `main`)
 
