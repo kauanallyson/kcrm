@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+    # Tag de versão (v1.2.3) publica a imagem com a versão
+    tags: ['v*']
 
 permissions:
   contents: read
@@ -53,8 +55,8 @@ jobs:
 
   imagem:
     name: Imagem no GitHub Container Registry
-    # Só na main e depois dos testes e do scan de dependências; PR nunca publica
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Só na main ou em tag de versão, depois dos testes e do scan de dependências; PR nunca publica
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     needs: [verify, dependencias]
     runs-on: ubuntu-latest
     # O GITHUB_TOKEN publica no ghcr.io do próprio repositório, sem secret extra
@@ -80,9 +82,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGEM }}
+          # main: latest + sha-<commit>. Tag v1.2.3: 1.2.3, 1.2 e sha-<commit>, sem mexer no latest
           tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-
-            type=raw,value=latest
 
       # Build amd64 carregado no runner só para o Trivy escanear antes de qualquer push
       - name: Build para o scan
