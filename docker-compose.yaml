@@ -64,12 +64,18 @@ services:
       - --api.insecure=true
       - --metrics.prometheus=true
       - --metrics.prometheus.entrypoint=metrics
+      - --ping=true
     ports:
       - "80:80"
       # Dashboard do Traefik
       - "8088:8080"
     volumes:
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   prometheus:
     image: prom/prometheus:v3.5.0
@@ -79,6 +85,11 @@ services:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/ready"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   grafana:
     image: grafana/grafana:12.1.0
@@ -93,8 +104,16 @@ services:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - grafana-data:/var/lib/grafana
     depends_on:
-      - prometheus
-      - loki
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 3s
+      start_period: 30s
+      retries: 3
 
   # Logs de todos os containers; sem porta no host, consultado só pelo Grafana
   loki:
@@ -105,6 +124,12 @@ services:
     volumes:
       - ./monitoring/loki/loki.yml:/etc/loki/loki.yml:ro
       - loki-data:/loki
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 3s
+      start_period: 30s
+      retries: 5
 
   # Coletor: lê os containers pelo socket do Docker (somente leitura) e envia ao Loki
   alloy:
@@ -116,7 +141,14 @@ services:
       - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
-      - loki
+      loki:
+        condition: service_healthy
+    # A imagem não tem wget/curl: faz o GET no /-/ready pelo /dev/tcp do bash
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/12345 && printf 'GET /-/ready HTTP/1.0\\r\\n\\r\\n' >&3 && head -1 <&3 | grep -q ' 200 '"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
 volumes:
   postgres-data:

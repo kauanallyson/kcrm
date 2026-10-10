@@ -6,6 +6,8 @@ server:
   log_level: warn
 
 common:
+  # Sem isso o ingester não entra no ring em memória e o /ready fica 503 para sempre
+  instance_addr: 127.0.0.1
   path_prefix: /loki
   replication_factor: 1
   ring:
