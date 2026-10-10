@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-Issues are tracked in GitHub Issues (kauanallyson/kcrm) via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues are tracked in GitHub Issues (kauanallyson/kcrm-backend) via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
