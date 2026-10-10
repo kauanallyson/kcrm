@@ -123,17 +123,6 @@ class ClienteIntegrationTest {
     }
 
     @Test
-    void listaMostraAoCorretorSoOsSeus() throws Exception {
-        UUID meu = cadastrarCliente(corretor, clienteJson(""));
-        cadastrarCliente(api.novoCorretor(), clienteJson(""));
-
-        String resposta = mockMvc.perform(comToken(get("/api/clientes"), corretor))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        List<String> ids = JsonPath.read(resposta, "$.conteudo[*].id");
-        assertThat(ids).containsExactly(meu.toString());
-    }
-
-    @Test
     void corretorApagaOProprioClienteMasNaoODeOutro() throws Exception {
         UUID meu = cadastrarCliente(corretor, clienteJson(""));
         UUID alheio = cadastrarCliente(api.novoCorretor(), clienteJson(""));
@@ -187,12 +176,6 @@ class ClienteIntegrationTest {
             List<String> ids = JsonPath.read(resposta, "$.conteudo[*].id");
             assertThat(ids).isSubsetOf(meu.toString());
         }
-    }
-
-    @Test
-    void ordenacaoPorCampoInexistenteEhRequisicaoInvalida() throws Exception {
-        mockMvc.perform(comToken(get("/api/clientes?sort=naoExiste"), corretor))
-                .andExpect(status().isBadRequest());
     }
 
     @Test

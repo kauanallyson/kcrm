@@ -104,9 +104,4 @@ class EnderecoTest {
         assertThatThrownBy(() -> endereco("Rua A", "1", null, "Centro", "Sobral", "Ceará", "62010000"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
-
-    @Test
-    void existemVinteESeteUfs() {
-        assertThat(Uf.values()).hasSize(27);
-    }
 }

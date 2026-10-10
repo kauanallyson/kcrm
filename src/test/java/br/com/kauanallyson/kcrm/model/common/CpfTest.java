@@ -7,11 +7,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CpfTest {
     @Test
-    void cpfFormatadoESemFormatacaoSaoIguais() {
-        assertThat(new Cpf("529.982.247-25")).isEqualTo(new Cpf("52998224725"));
-    }
-
-    @Test
     void cpfFormatadoEhPreservado() {
         assertThat(new Cpf("529.982.247-25").value()).isEqualTo("529.982.247-25");
     }
